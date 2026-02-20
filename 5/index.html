@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>כלים וסקריפטים - סריקת רשת</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap');
+  * { box-sizing: border-box; }
+  body, html {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh; overflow: hidden; direction: rtl;
+  }
+  body.dark { background: #121212; color: #e1e1e1; }
+  #app { display: flex; height: 100vh; width: 100vw; overflow: hidden; user-select: none; }
+  #sidebar {
+    background: #0078D7; width: 280px; color: white; display: flex; flex-direction: column;
+    padding: 25px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); transition: width 0.3s ease;
+  }
+  #sidebar.collapsed { width: 70px; }
+  #sidebar header { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; }
+  #toggleSidebarBtn {
+    background: transparent; border: none; color: white; font-size: 1.8rem;
+    cursor: pointer; margin-bottom: 20px; align-self: flex-start; transition: transform 0.3s ease;
+  }
+  #sidebar.collapsed #toggleSidebarBtn { transform: rotate(180deg); }
+  #searchInput {
+    width: 100%; padding: 10px 15px; border-radius: 8px; border: none;
+    font-size: 1rem; margin-bottom: 30px;
+  }
+  #categories { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; }
+  #categories::-webkit-scrollbar { width: 6px; }
+  #categories::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+  .category-title {
+    font-weight: 700; margin: 15px 0 8px 0; font-size: 1.1rem;
+    border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 6px;
+  }
+  .item-button {
+    width: 100%; background: rgba(255,255,255,0.15); border: none; color: white;
+    padding: 12px 18px; margin-bottom: 12px; border-radius: 8px; text-align: right;
+    font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3); transition: all 0.25s ease;
+  }
+  .item-button:hover { background: rgba(255,255,255,0.3); box-shadow: 0 6px 12px rgba(0,0,0,0.5); }
+  .item-icon { flex-shrink: 0; font-size: 1.4rem; }
+  #main {
+    flex-grow: 1; padding: 36px 48px; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  #main h1 { font-weight: 800; font-size: 2.5rem; margin-bottom: 25px; color: #0097e6; }
+  #scriptDisplay {
+    flex-grow: 1; background-color: #222; border-radius: 12px; padding: 25px;
+    font-family: 'Consolas', monospace; font-size: 16px; color: #c7d1e0;
+    white-space: pre-wrap; overflow-y: auto;
+    box-shadow: inset 0 0 18px rgba(0, 151, 230, 0.7);
+    border: none; resize: vertical; min-height: 300px;
+  }
+  #copyBtn {
+    margin-top: 12px; align-self: flex-start;
+    background: linear-gradient(90deg, #0097e6 0%, #00c1ff 100%);
+    border: none; border-radius: 8px; padding: 10px 24px;
+    font-weight: 700; font-size: 1rem; color: white; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 193, 255, 0.5); transition: all 0.3s ease;
+  }
+  #copyBtn:hover { background: linear-gradient(90deg, #0072bb 0%, #0096e6 100%); }
+  #loginForm {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #1e1e1e; border-radius: 14px; padding: 40px 48px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.9); width: 360px;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+  }
+  #loginForm h2 { color: #0097e6; font-weight: 700; font-size: 1.9rem; margin: 0; }
+  #passwordInput {
+    width: 100%; padding: 14px 20px; font-size: 1.2rem; border-radius: 10px;
+    border: none; background: #2a2a2a; color: #ddd;
+  }
+  #passwordInput:focus { background: #3a3a3a; }
+  #errorMsg { height: 28px; color: #ff5555; font-weight: 700; }
+  #loginForm button {
+    width: 100%; background: linear-gradient(90deg, #0097e6 0%, #00c1ff 100%);
+    border: none; border-radius: 12px; padding: 14px 0; font-weight: 700;
+    font-size: 1.2rem; color: white; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 193, 255, 0.7); transition: all 0.3s ease;
+  }
+  #loginForm button:hover {
+    background: linear-gradient(90deg, #0072bb 0%, #0096e6 100%);
+    box-shadow: 0 8px 22px rgba(0, 150, 230, 0.9);
+  }
+  .icon-script { color: #ffaa00; }
+</style>
+</head>
+<body class="dark">
+
+<div id="loginForm">
+  <h2>הכנס סיסמה</h2>
+  <input type="password" id="passwordInput" placeholder="סיסמה" autocomplete="current-password" />
+  <button id="loginBtn">כניסה</button>
+  <p id="errorMsg"></p>
+</div>
+
+<div id="app" style="display:none;">
+  <nav id="sidebar">
+    <header>TOOLS</header>
+    <button id="toggleSidebarBtn">&#9776;</button>
+    <input type="search" id="searchInput" placeholder="חפש..." autocomplete="off" />
+    <div id="categories">
+
+      <div class="category">
+        <div class="category-title">סריקת רשת</div>
+        <button class="item-button" data-name="סריקת רשת מקומית" onclick="showScript(networkScanScript)">
+          <span class="icon icon-script">&#128187;</span> סריקת רשת מקומית
+        </button>
+      </div>
+
+    </div>
+  </nav>
+
+  <main id="main">
+    <h1>סקריפטים - סריקת רשת</h1>
+    <textarea id="scriptDisplay" readonly placeholder="בחר סקריפט..."></textarea>
+    <button id="copyBtn" style="display:none;" onclick="copyScript()">📋 העתק סקריפט</button>
+  </main>
+</div>
+
+<script>
+  const password = "123";
+  const loginForm = document.getElementById('loginForm');
+  const app = document.getElementById('app');
+  const errorMsg = document.getElementById('errorMsg');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+
+  loginBtn.addEventListener('click', checkPassword);
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkPassword(); });
+
+  function checkPassword() {
+    if(passwordInput.value.trim() === password){
+      loginForm.style.display = 'none';
+      app.style.display = 'flex';
+      errorMsg.textContent = '';
+      passwordInput.value = '';
+    } else {
+      errorMsg.textContent = 'סיסמה שגויה';
+    }
+  }
+
+  const networkScanScript = `#Requires -Version 5.1
+
+[CmdletBinding()]
+param(
+    [int]$MaxThreads  = 254,
+    [int]$TimeoutMs   = 800,
+    [switch]$ResolveNames = $true
+)
+
+function Get-LocalSubnets {
+    $subnets = @()
+    $adapters = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object { $_.IPAddress -notmatch '^(127\\.|169\\.254\\.)' -and $_.PrefixLength -lt 32 }
+
+    foreach ($a in $adapters) {
+        $prefix     = $a.PrefixLength
+        $ipInt      = [System.Convert]::ToUInt32((($a.IPAddress.Split('.') | ForEach-Object { [System.Convert]::ToString([int]$_, 2).PadLeft(8,'0') }) -join ''), 2)
+        $maskInt    = [System.Convert]::ToUInt32(('1' * $prefix + '0' * (32 - $prefix)), 2)
+        $networkInt = $ipInt -band $maskInt
+
+        $b = [System.BitConverter]::GetBytes($networkInt)
+        [array]::Reverse($b)
+        $network = $b -join '.'
+
+        $hostCount = [Math]::Pow(2, 32 - $prefix) - 2
+        if ($hostCount -lt 1 -or $hostCount -gt 1022) { continue }
+
+        $subnets += [PSCustomObject]@{
+            Network   = $network
+            Prefix    = $prefix
+            HostCount = [int]$hostCount
+            Adapter   = $a.InterfaceAlias
+        }
+    }
+    return $subnets
+}
+
+$subnets = Get-LocalSubnets
+
+if ($subnets.Count -eq 0) {
+    Write-Warning "No valid local subnet found"
+    exit 1
+}
+
+$subnet    = $subnets | Sort-Object HostCount -Descending | Select-Object -First 1
+$baseIP    = $subnet.Network
+$hostCount = $subnet.HostCount
+
+Write-Host ""
+Write-Host "Adapter : $($subnet.Adapter)" -ForegroundColor Gray
+Write-Host "Segment : $baseIP/$($subnet.Prefix)" -ForegroundColor Gray
+Write-Host "Hosts   : $hostCount addresses to scan" -ForegroundColor Gray
+Write-Host ""
+
+$startTime = Get-Date
+
+$baseInt = [System.Convert]::ToUInt32((($baseIP.Split('.') | ForEach-Object { [System.Convert]::ToString([int]$_, 2).PadLeft(8,'0') }) -join ''), 2)
+$allIPs  = @()
+for ($i = 1; $i -le $hostCount; $i++) {
+    $ipInt = $baseInt + $i
+    $b = [System.BitConverter]::GetBytes($ipInt)
+    [array]::Reverse($b)
+    $allIPs += ($b -join '.')
+}
+
+$scriptBlock = {
+    param($ip, $timeoutMs, $resolveNames)
+    try {
+        $ping  = New-Object System.Net.NetworkInformation.Ping
+        $reply = $ping.Send($ip, $timeoutMs)
+        $ping.Dispose()
+        if ($reply.Status -eq 'Success') {
+            $hostname = ''
+            if ($resolveNames) {
+                try { $hostname = [System.Net.Dns]::GetHostEntry($ip).HostName } catch { }
+            }
+            return [PSCustomObject]@{
+                IP       = $ip
+                Hostname = $hostname
+                RTT      = $reply.RoundtripTime
+                Status   = 'Online'
+            }
+        }
+    } catch { }
+    return $null
+}
+
+$sessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+$pool = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspacePool(1, $MaxThreads, $sessionState, $Host)
+$pool.Open()
+
+$jobs    = @()
+$counter = 0
+
+foreach ($ip in $allIPs) {
+    $counter++
+    $ps = [System.Management.Automation.PowerShell]::Create()
+    $ps.RunspacePool = $pool
+    [void]$ps.AddScript($scriptBlock)
+    [void]$ps.AddArgument($ip)
+    [void]$ps.AddArgument($TimeoutMs)
+    [void]$ps.AddArgument($ResolveNames)
+    $jobs += [PSCustomObject]@{ PS = $ps; Handle = $ps.BeginInvoke(); IP = $ip }
+
+    if ($counter % 25 -eq 0 -or $counter -eq $allIPs.Count) {
+        $pct = [int](($counter / $allIPs.Count) * 100)
+        Write-Progress -Activity "Scanning $baseIP/$($subnet.Prefix)" -Status "Sent $counter / $($allIPs.Count) pings..." -PercentComplete $pct
+    }
+}
+
+Write-Progress -Activity "Scanning" -Status "Collecting results..." -PercentComplete 100
+
+$results = @()
+foreach ($job in $jobs) {
+    $result = $job.PS.EndInvoke($job.Handle)
+    $job.PS.Dispose()
+    if ($result -ne $null -and $result.Status -eq 'Online') {
+        $results += $result
+    }
+}
+
+$pool.Close()
+$pool.Dispose()
+Write-Progress -Activity "Scanning" -Completed
+
+$elapsed = (Get-Date) - $startTime
+$sorted  = $results | Sort-Object { [System.Version]$_.IP }
+
+Write-Host ""
+Write-Host "Found $($results.Count) devices  |  Time: $([math]::Round($elapsed.TotalSeconds,1))s" -ForegroundColor Green
+Write-Host ""
+Write-Host ("{0,-18} {1,-45} {2}" -f "IP Address", "Hostname", "RTT (ms)") -ForegroundColor Yellow
+Write-Host ("{0,-18} {1,-45} {2}" -f ("─"*16), ("─"*43), ("─"*8)) -ForegroundColor DarkGray
+
+foreach ($dev in $sorted) {
+    $name     = if ($dev.Hostname) { $dev.Hostname } else { "(no DNS)" }
+    $rttColor = if ($dev.RTT -lt 5) { 'Green' } elseif ($dev.RTT -lt 50) { 'Cyan' } else { 'Yellow' }
+    Write-Host ("{0,-18} {1,-45} " -f $dev.IP, $name) -NoNewline -ForegroundColor White
+    Write-Host ("{0}" -f $dev.RTT) -ForegroundColor $rttColor
+}
+
+Write-Host ""
+return $sorted`;
+
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', e => {
+    const val = e.target.value.toLowerCase();
+    document.querySelectorAll('.item-button').forEach(btn => {
+      btn.style.display = btn.getAttribute('data-name').toLowerCase().includes(val) ? 'flex' : 'none';
+    });
+  });
+
+  document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+
+  function showScript(scriptText) {
+    const display = document.getElementById('scriptDisplay');
+    display.value = scriptText;
+    display.focus();
+    display.select();
+    document.getElementById('copyBtn').style.display = 'inline-block';
+  }
+
+  function copyScript() {
+    const display = document.getElementById('scriptDisplay');
+    navigator.clipboard.writeText(display.value).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✅ הועתק!';
+      setTimeout(() => { btn.textContent = '📋 העתק סקריפט'; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
