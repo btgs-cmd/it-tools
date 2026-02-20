@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>העברת טקסט זמנית - עמוד 4</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            max-width: 800px; 
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        textarea { 
+            width: 100%; 
+            height: 300px; 
+            font-size: 16px; 
+            padding: 15px; 
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: Arial;
+        }
+        button { 
+            padding: 12px 30px; 
+            font-size: 16px; 
+            margin: 10px 5px 0 0; 
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .info { 
+            background: #d4edda; 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 5px;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .link-box {
+            background: #e7f3ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .link-box input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>העברת טקסט זמנית - עמוד 4</h1>
+        
+        <div id="info"></div>
+        
+        <div id="linkBox" class="link-box" style="display:none;">
+            <strong>📋 קישור לטקסט:</strong><br>
+            <input type="text" id="shareLink" readonly>
+            <button onclick="copyLink()">העתק קישור</button>
+        </div>
+        
+        <textarea id="text" placeholder="הדבק או כתוב טקסט כאן..."></textarea>
+        <br>
+        <button onclick="saveText()">שמור וצור קישור</button>
+        <button onclick="clearText()" style="background: #dc3545;">נקה</button>
+    </div>
+    
+    <script>
+        // Load text on page load if ID exists in URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const textData = urlParams.get('t');
+            
+            if (textData) {
+                try {
+                    const decoded = atob(textData);
+                    document.getElementById('text').value = decoded;
+                    document.getElementById('info').innerHTML = 
+                        '<div class="info">✅ הטקסט נטען בהצלחה!</div>';
+                } catch (e) {
+                    document.getElementById('info').innerHTML = 
+                        '<div class="warning">❌ שגיאה בטעינת הטקסט</div>';
+                }
+            } else {
+                document.getElementById('info').innerHTML = 
+                    '<div class="warning">💡 הכנס טקסט ולחץ "שמור" כדי ליצור קישור</div>';
+            }
+        };
+        
+        function saveText() {
+            const text = document.getElementById('text').value;
+            if (!text.trim()) {
+                alert('אנא הכנס טקסט');
+                return;
+            }
+            
+            // Encode text to base64
+            const encoded = btoa(unescape(encodeURIComponent(text)));
+            
+            // Create link with encoded text
+            const shareUrl = `${window.location.origin}${window.location.pathname}?t=${encoded}`;
+            
+            document.getElementById('shareLink').value = shareUrl;
+            document.getElementById('linkBox').style.display = 'block';
+            
+            document.getElementById('info').innerHTML = 
+                '<div class="info">✅ הקישור נוצר! העתק אותו ושלח למחשב השני</div>';
+            
+            // Update URL
+            window.history.pushState({}, '', `?t=${encoded}`);
+        }
+        
+        function clearText() {
+            document.getElementById('text').value = '';
+            document.getElementById('linkBox').style.display = 'none';
+            window.history.pushState({}, '', window.location.pathname);
+            document.getElementById('info').innerHTML = 
+                '<div class="warning">הטקסט נמחק</div>';
+        }
+        
+        function copyLink() {
+            const link = document.getElementById('shareLink');
+            link.select();
+            link.setSelectionRange(0, 99999); // For mobile
+            document.execCommand('copy');
+            
+            alert('✅ הקישור הועתק! שלח אותו למחשב השני');
+        }
+    </script>
+</body>
+</html>

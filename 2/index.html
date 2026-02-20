@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>כלים וסקריפטים - מערכת מתקדמת</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap');
+  * { box-sizing: border-box; }
+  body, html {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh; overflow: hidden; direction: rtl;
+  }
+  body.dark { background: #121212; color: #e1e1e1; }
+  #app { display: flex; height: 100vh; width: 100vw; overflow: hidden; user-select: none; }
+  #sidebar {
+    background: #0078D7; width: 280px; color: white; display: flex; flex-direction: column;
+    padding: 25px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); transition: width 0.3s ease;
+  }
+  #sidebar.collapsed { width: 70px; }
+  #sidebar header { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; }
+  #toggleSidebarBtn {
+    background: transparent; border: none; color: white; font-size: 1.8rem;
+    cursor: pointer; margin-bottom: 20px; align-self: flex-start; transition: transform 0.3s ease;
+  }
+  #sidebar.collapsed #toggleSidebarBtn { transform: rotate(180deg); }
+  #searchInput {
+    width: 100%; padding: 10px 15px; border-radius: 8px; border: none;
+    font-size: 1rem; margin-bottom: 30px;
+  }
+  #categories { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; }
+  #categories::-webkit-scrollbar { width: 6px; }
+  #categories::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+  .category-title {
+    font-weight: 700; margin: 15px 0 8px 0; font-size: 1.1rem;
+    border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 6px;
+  }
+  .item-button {
+    width: 100%; background: rgba(255,255,255,0.15); border: none; color: white;
+    padding: 12px 18px; margin-bottom: 12px; border-radius: 8px; text-align: right;
+    font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3); transition: all 0.25s ease;
+  }
+  .item-button:hover { background: rgba(255,255,255,0.3); box-shadow: 0 6px 12px rgba(0,0,0,0.5); }
+  .item-icon { flex-shrink: 0; font-size: 1.4rem; }
+  #main {
+    flex-grow: 1; padding: 36px 48px; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  #main h1 { font-weight: 800; font-size: 2.5rem; margin-bottom: 25px; color: #0097e6; }
+  #scriptDisplay {
+    flex-grow: 1; background-color: #222; border-radius: 12px; padding: 25px;
+    font-family: 'Consolas', monospace; font-size: 16px; color: #c7d1e0;
+    white-space: pre-wrap; overflow-y: auto;
+    box-shadow: inset 0 0 18px rgba(0, 151, 230, 0.7);
+    border: none; resize: vertical; min-height: 300px;
+  }
+  #loginForm {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #1e1e1e; border-radius: 14px; padding: 40px 48px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.9); width: 360px;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+  }
+  #loginForm h2 { color: #0097e6; font-weight: 700; font-size: 1.9rem; margin: 0; }
+  #passwordInput {
+    width: 100%; padding: 14px 20px; font-size: 1.2rem; border-radius: 10px;
+    border: none; background: #2a2a2a; color: #ddd;
+  }
+  #passwordInput:focus { background: #3a3a3a; }
+  #errorMsg { height: 28px; color: #ff5555; font-weight: 700; }
+  #loginForm button {
+    width: 100%; background: linear-gradient(90deg, #0097e6 0%, #00c1ff 100%);
+    border: none; border-radius: 12px; padding: 14px 0; font-weight: 700;
+    font-size: 1.2rem; color: white; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 193, 255, 0.7); transition: all 0.3s ease;
+  }
+  #loginForm button:hover {
+    background: linear-gradient(90deg, #0072bb 0%, #0096e6 100%);
+    box-shadow: 0 8px 22px rgba(0, 150, 230, 0.9);
+  }
+  .icon-download { color: #00c1ff; }
+  .icon-script { color: #ffaa00; }
+</style>
+</head>
+<body class="dark">
+
+<div id="loginForm">
+  <h2>הכנס סיסמה</h2>
+  <input type="password" id="passwordInput" placeholder="סיסמה" autocomplete="current-password" />
+  <button id="loginBtn">כניסה</button>
+  <p id="errorMsg"></p>
+</div>
+
+<div id="app" style="display:none;">
+  <nav id="sidebar">
+    <header>TOOLS</header>
+    <button id="toggleSidebarBtn">&#9776;</button>
+    <input type="search" id="searchInput" placeholder="חפש..." autocomplete="off" />
+    <div id="categories">
+
+      <div class="category">
+        <div class="category-title">תוכנות להורדה</div>
+        <button class="item-button" data-name="בדיקת דיסקים" onclick="openLink('https://sourceforge.net/projects/crystaldiskinfo/files/9.5.0/CrystalDiskInfo9_5_0.zip/download')">
+          <span class="icon icon-download">&#128190;</span> בדיקת דיסקים
+        </button>
+        <button class="item-button" data-name="בדיקת רוגלות" onclick="openLink('https://www.malwarebytes.com/mwb-download/thankyou')">
+          <span class="icon icon-download">&#128190;</span> בדיקת רוגלות
+        </button>
+        <button class="item-button" data-name="SyncBack" onclick="openLink('https://www.2brightsparks.com/assets/software/SyncBack_Setup.exe')">
+          <span class="icon icon-download">&#128190;</span> SyncBack
+        </button>
+        <button class="item-button" data-name="TreeSize" onclick="openLink('https://150.co.il/downloads/TreeSize.exe')">
+          <span class="icon icon-download">&#128190;</span> TreeSize
+        </button>
+        <button class="item-button" data-name="WNetWatcher" onclick="openLink('https://150.co.il/downloads/WNetWatcher.exe')">
+          <span class="icon icon-download">&#128190;</span> WNetWatcher (סריקת רשת)
+        </button>
+      </div>
+
+      <div class="category">
+        <div class="category-title">כלי אוטומציה</div>
+        <button class="item-button" data-name="אוטומציה Malwarebytes" onclick="openLink('malwarebytesAutomation.exe')">
+          <span class="icon icon-download">&#9881;</span> אוטומציה של Malwarebytes
+        </button>
+        <button class="item-button" data-name="אוטומציה BitLocker" onclick="openLink('bitlockerAutomation.exe')">
+          <span class="icon icon-download">&#128274;</span> אוטומציה של BitLocker
+        </button>
+        <button class="item-button" data-name="בדיקת לחץ מעבד" onclick="openLink('stressGui.exe')">
+          <span class="icon icon-download">&#128165;</span> בדיקת לחץ למעבד
+        </button>
+      </div>
+
+      <div class="category">
+        <div class="category-title">סקריפטים</div>
+        <button class="item-button" data-name="טים BTGS" onclick="openLink('https://www.898.tv/b5555')">
+          <span class="icon icon-download">&#128190;</span> טים BTGS התקנה
+        </button>
+        <button class="item-button" data-name="חיפוש דומיינים" onclick="openLink('https://mxtoolbox.com/SuperTool.aspx#')">
+          <span class="icon icon-download">&#128190;</span> חיפוש דומיינים
+        </button>
+        <button class="item-button" data-name="בדיקת מקלדת" onclick="openLink('https://en.key-test.ru/')">
+          <span class="icon icon-download">&#128190;</span> בדיקת מקלדת
+        </button>
+        <button class="item-button" data-name="מחיקת TEMP" onclick="showScript(deleteTempScript)">
+          <span class="icon icon-script">&#128187;</span> מחיקת TEMP
+        </button>
+        <button class="item-button" data-name="אדמין נצחי" onclick="showScript(adminForeverScript)">
+          <span class="icon icon-script">&#128187;</span> אדמין נצחי
+        </button>
+        <button class="item-button" data-name="אקטיבציה" onclick="showScript(activationScript)">
+          <span class="icon icon-script">&#128187;</span> אקטיבציה
+        </button>
+      </div>
+
+    </div>
+  </nav>
+
+  <main id="main">
+    <h1>הורדת כלים וסקריפטים</h1>
+    <textarea id="scriptDisplay" readonly placeholder="בחר סקריפט..."></textarea>
+  </main>
+</div>
+
+<script>
+  const password = "123";
+  const loginForm = document.getElementById('loginForm');
+  const app = document.getElementById('app');
+  const errorMsg = document.getElementById('errorMsg');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+
+  loginBtn.addEventListener('click', checkPassword);
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkPassword(); });
+
+  function checkPassword() {
+    if(passwordInput.value.trim() === password){
+      loginForm.style.display = 'none';
+      app.style.display = 'flex';
+      errorMsg.textContent = '';
+      passwordInput.value = '';
+    } else {
+      errorMsg.textContent = 'סיסמה שגויה';
+    }
+  }
+
+  function openLink(url) { window.open(url, '_blank', 'noopener'); }
+
+  const deleteTempScript = `@echo off
+del /s /q "%USERPROFILE%\\AppData\\Local\\Temp\\*"
+rmdir /s /q "%USERPROFILE%\\AppData\\Local\\Temp"
+mkdir "%USERPROFILE%\\AppData\\Local\\Temp"
+del /s /q "C:\\Windows\\Temp\\*"
+rmdir /s /q "C:\\Windows\\Temp"
+mkdir "C:\\Windows\\Temp"
+pause`;
+
+  const adminForeverScript = `New-ItemProperty -Path HKLM:Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System -Name EnableLUA -PropertyType DWord -Value 0 -Force
+New-ItemProperty -Path HKLM:Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System -Name ConsentPromptBehaviorAdmin -PropertyType DWord -Value 0 -Force`;
+
+  const activationScript = `irm https://get.activated.win | iex`;
+
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', e => {
+    const val = e.target.value.toLowerCase();
+    document.querySelectorAll('.item-button').forEach(btn => {
+      btn.style.display = btn.getAttribute('data-name').toLowerCase().includes(val) ? 'flex' : 'none';
+    });
+  });
+
+  document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+
+  function showScript(scriptText) {
+    const display = document.getElementById('scriptDisplay');
+    display.value = scriptText;
+    display.focus();
+    display.select();
+  }
+</script>
+</body>
+</html>
