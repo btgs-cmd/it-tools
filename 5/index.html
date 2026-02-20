@@ -5,22 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>כלים וסקריפטים - פאוורשל</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap');
   * { box-sizing: border-box; }
   body, html {
     margin: 0; padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     height: 100vh; overflow: hidden; direction: rtl;
+    background: #121212; color: #e1e1e1;
   }
-  body.dark { background: #121212; color: #e1e1e1; }
-  #app { display: flex; height: 100vh; width: 100vw; overflow: hidden; user-select: none; }
+  #app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
   #sidebar {
     background: #0078D7; width: 280px; color: white; display: flex; flex-direction: column;
     padding: 25px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); transition: width 0.3s ease;
-    overflow: hidden;
+    overflow: hidden; flex-shrink: 0;
   }
   #sidebar.collapsed { width: 70px; }
-  #sidebar header { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; white-space: nowrap; }
+  #sidebar header { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; white-space: nowrap; overflow: hidden; }
   #toggleSidebarBtn {
     background: transparent; border: none; color: white; font-size: 1.8rem;
     cursor: pointer; margin-bottom: 20px; align-self: flex-start; transition: transform 0.3s ease;
@@ -28,7 +27,7 @@
   #sidebar.collapsed #toggleSidebarBtn { transform: rotate(180deg); }
   #searchInput {
     width: 100%; padding: 10px 15px; border-radius: 8px; border: none;
-    font-size: 1rem; margin-bottom: 30px;
+    font-size: 1rem; margin-bottom: 20px;
   }
   #sidebar.collapsed #searchInput,
   #sidebar.collapsed header,
@@ -38,75 +37,43 @@
   #categories::-webkit-scrollbar { width: 6px; }
   #categories::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
   .category-title {
-    font-weight: 700; margin: 15px 0 8px 0; font-size: 1.1rem;
-    border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 6px;
+    font-weight: 700; margin: 15px 0 8px 0; font-size: 1rem;
+    border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px;
   }
   .item-button {
     width: 100%; background: rgba(255,255,255,0.15); border: none; color: white;
-    padding: 12px 18px; margin-bottom: 12px; border-radius: 8px; text-align: right;
-    font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 12px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.3); transition: all 0.25s ease;
+    padding: 10px 14px; margin-bottom: 10px; border-radius: 8px; text-align: right;
+    font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3); transition: all 0.2s ease;
   }
-  .item-button:hover { background: rgba(255,255,255,0.3); box-shadow: 0 6px 12px rgba(0,0,0,0.5); }
-  .item-button.active { background: rgba(255,255,255,0.4); }
-  .item-icon { flex-shrink: 0; font-size: 1.4rem; }
+  .item-button:hover { background: rgba(255,255,255,0.3); }
+  .item-button.active { background: rgba(255,255,255,0.45); box-shadow: 0 0 0 2px white; }
+  .item-icon { flex-shrink: 0; font-size: 1.3rem; }
   #main {
-    flex-grow: 1; padding: 36px 48px; overflow-y: auto;
+    flex-grow: 1; padding: 30px 40px; overflow-y: auto;
     display: flex; flex-direction: column;
   }
-  #main h1 { font-weight: 800; font-size: 2.5rem; margin-bottom: 8px; color: #0097e6; }
-  #scriptDesc { color: #888; font-size: 1rem; margin-bottom: 18px; min-height: 22px; }
+  #main h1 { font-weight: 800; font-size: 2.2rem; margin: 0 0 6px 0; color: #0097e6; }
+  #scriptDesc { color: #888; font-size: 0.95rem; margin-bottom: 16px; min-height: 20px; }
   #scriptDisplay {
-    flex-grow: 1; background-color: #222; border-radius: 12px; padding: 25px;
-    font-family: 'Consolas', monospace; font-size: 14px; color: #c7d1e0;
+    flex-grow: 1; background-color: #1e1e1e; border-radius: 12px; padding: 20px;
+    font-family: 'Consolas', monospace; font-size: 13px; color: #c7d1e0;
     white-space: pre-wrap; overflow-y: auto;
-    box-shadow: inset 0 0 18px rgba(0, 151, 230, 0.7);
-    border: none; resize: vertical; min-height: 300px;
+    box-shadow: inset 0 0 18px rgba(0, 151, 230, 0.5);
+    border: 1px solid #333; resize: vertical; min-height: 300px;
   }
   #copyBtn {
     margin-top: 12px; align-self: flex-start;
-    background: linear-gradient(90deg, #0097e6 0%, #00c1ff 100%);
+    background: linear-gradient(90deg, #0097e6, #00c1ff);
     border: none; border-radius: 8px; padding: 10px 24px;
     font-weight: 700; font-size: 1rem; color: white; cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 193, 255, 0.5); transition: all 0.3s ease;
-    display: none;
+    box-shadow: 0 4px 12px rgba(0,193,255,0.4); transition: all 0.2s ease;
   }
-  #copyBtn:hover { background: linear-gradient(90deg, #0072bb 0%, #0096e6 100%); }
-  #loginForm {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #1e1e1e; border-radius: 14px; padding: 40px 48px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.9); width: 360px;
-    display: flex; flex-direction: column; align-items: center; gap: 24px;
-  }
-  #loginForm h2 { color: #0097e6; font-weight: 700; font-size: 1.9rem; margin: 0; }
-  #passwordInput {
-    width: 100%; padding: 14px 20px; font-size: 1.2rem; border-radius: 10px;
-    border: none; background: #2a2a2a; color: #ddd;
-  }
-  #passwordInput:focus { background: #3a3a3a; outline: none; }
-  #errorMsg { height: 28px; color: #ff5555; font-weight: 700; }
-  #loginForm button {
-    width: 100%; background: linear-gradient(90deg, #0097e6 0%, #00c1ff 100%);
-    border: none; border-radius: 12px; padding: 14px 0; font-weight: 700;
-    font-size: 1.2rem; color: white; cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 193, 255, 0.7); transition: all 0.3s ease;
-  }
-  #loginForm button:hover {
-    background: linear-gradient(90deg, #0072bb 0%, #0096e6 100%);
-    box-shadow: 0 8px 22px rgba(0, 150, 230, 0.9);
-  }
+  #copyBtn:hover { background: linear-gradient(90deg, #0072bb, #0096e6); }
 </style>
 </head>
-<body class="dark">
-
-<div id="loginForm">
-  <h2>הכנס סיסמה</h2>
-  <input type="password" id="passwordInput" placeholder="סיסמה" autocomplete="current-password" />
-  <button id="loginBtn">כניסה</button>
-  <p id="errorMsg"></p>
-</div>
-
-<div id="app" style="display:none;">
+<body>
+<div id="app">
   <nav id="sidebar">
     <header>TOOLS</header>
     <button id="toggleSidebarBtn">&#9776;</button>
@@ -116,44 +83,37 @@
       <div class="category">
         <div class="category-title">סריקת רשת</div>
         <button class="item-button" data-name="סריקת רשת מקומית" onclick="showScript('networkScan', this)">
-          <span class="item-icon">&#128268;</span>
-          <span class="item-label">סריקת רשת מקומית</span>
+          <span class="item-icon">&#128268;</span><span class="item-label">סריקת רשת מקומית</span>
         </button>
       </div>
 
       <div class="category">
         <div class="category-title">אבטחה</div>
         <button class="item-button" data-name="אוטומציה Malwarebytes" onclick="showScript('mbAutomation', this)">
-          <span class="item-icon">&#128737;</span>
-          <span class="item-label">אוטומציה Malwarebytes</span>
+          <span class="item-icon">&#128737;</span><span class="item-label">אוטומציה Malwarebytes</span>
         </button>
         <button class="item-button" data-name="אוטומציה BitLocker" onclick="showScript('bitlockerAutomation', this)">
-          <span class="item-icon">&#128274;</span>
-          <span class="item-label">אוטומציה BitLocker</span>
+          <span class="item-icon">&#128274;</span><span class="item-label">אוטומציה BitLocker</span>
         </button>
         <button class="item-button" data-name="דוח BitLocker" onclick="showScript('bitlockerReport', this)">
-          <span class="item-icon">&#128196;</span>
-          <span class="item-label">דוח BitLocker</span>
+          <span class="item-icon">&#128196;</span><span class="item-label">דוח BitLocker</span>
         </button>
       </div>
 
       <div class="category">
         <div class="category-title">ביצועים</div>
         <button class="item-button" data-name="בדיקת לחץ מעבד" onclick="showScript('stressGui', this)">
-          <span class="item-icon">&#128165;</span>
-          <span class="item-label">בדיקת לחץ מעבד (GUI)</span>
+          <span class="item-icon">&#128165;</span><span class="item-label">בדיקת לחץ מעבד</span>
         </button>
         <button class="item-button" data-name="מחיקת TEMP" onclick="showScript('deleteTemp', this)">
-          <span class="item-icon">&#128465;</span>
-          <span class="item-label">מחיקת TEMP</span>
+          <span class="item-icon">&#128465;</span><span class="item-label">מחיקת TEMP</span>
         </button>
       </div>
 
       <div class="category">
         <div class="category-title">Office 365</div>
         <button class="item-button" data-name="מכסת תיבות דואר" onclick="showScript('mailboxQuota', this)">
-          <span class="item-icon">&#128140;</span>
-          <span class="item-label">מכסת תיבות דואר</span>
+          <span class="item-icon">&#128140;</span><span class="item-label">מכסת תיבות דואר</span>
         </button>
       </div>
 
@@ -169,489 +129,74 @@
 </div>
 
 <script>
-  const password = "123";
-  const loginForm = document.getElementById('loginForm');
-  const app = document.getElementById('app');
-  const errorMsg = document.getElementById('errorMsg');
-  const passwordInput = document.getElementById('passwordInput');
+var scripts = {
 
-  document.getElementById('loginBtn').addEventListener('click', checkPassword);
-  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkPassword(); });
+  networkScan: {
+    desc: "סורק את כל המכשירים ברשת המקומית עם Ping מקבילי — מציג IP, שם מחשב וזמן תגובה",
+    code: "#Requires -Version 5.1\n[CmdletBinding()]\nparam(\n    [int]$MaxThreads = 254,\n    [int]$TimeoutMs = 800,\n    [switch]$ResolveNames = $true\n)\n\nfunction Get-LocalSubnets {\n    $subnets = @()\n    $adapters = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |\n        Where-Object { $_.IPAddress -notmatch '^(127\\.|169\\.254\\.)' -and $_.PrefixLength -lt 32 }\n    foreach ($a in $adapters) {\n        $prefix = $a.PrefixLength\n        $ipInt = [System.Convert]::ToUInt32((($a.IPAddress.Split('.') | ForEach-Object { [System.Convert]::ToString([int]$_, 2).PadLeft(8,'0') }) -join ''), 2)\n        $maskInt = [System.Convert]::ToUInt32(('1' * $prefix + '0' * (32 - $prefix)), 2)\n        $networkInt = $ipInt -band $maskInt\n        $b = [System.BitConverter]::GetBytes($networkInt)\n        [array]::Reverse($b)\n        $network = $b -join '.'\n        $hostCount = [Math]::Pow(2, 32 - $prefix) - 2\n        if ($hostCount -lt 1 -or $hostCount -gt 1022) { continue }\n        $subnets += [PSCustomObject]@{ Network=$network; Prefix=$prefix; HostCount=[int]$hostCount; Adapter=$a.InterfaceAlias }\n    }\n    return $subnets\n}\n\n$subnets = Get-LocalSubnets\nif ($subnets.Count -eq 0) { Write-Warning 'No valid local subnet found'; exit 1 }\n$subnet = $subnets | Sort-Object HostCount -Descending | Select-Object -First 1\n$baseIP = $subnet.Network\n$hostCount = $subnet.HostCount\n\nWrite-Host 'Adapter : ' $subnet.Adapter -ForegroundColor Gray\nWrite-Host \"Segment : $baseIP/$($subnet.Prefix)\" -ForegroundColor Gray\nWrite-Host \"Hosts   : $hostCount addresses to scan\" -ForegroundColor Gray\n\n$startTime = Get-Date\n$baseInt = [System.Convert]::ToUInt32((($baseIP.Split('.') | ForEach-Object { [System.Convert]::ToString([int]$_, 2).PadLeft(8,'0') }) -join ''), 2)\n$allIPs = @()\nfor ($i = 1; $i -le $hostCount; $i++) {\n    $b = [System.BitConverter]::GetBytes($baseInt + $i)\n    [array]::Reverse($b)\n    $allIPs += ($b -join '.')\n}\n\n$scriptBlock = {\n    param($ip, $timeoutMs, $resolveNames)\n    try {\n        $ping = New-Object System.Net.NetworkInformation.Ping\n        $reply = $ping.Send($ip, $timeoutMs)\n        $ping.Dispose()\n        if ($reply.Status -eq 'Success') {\n            $hostname = ''\n            if ($resolveNames) { try { $hostname = [System.Net.Dns]::GetHostEntry($ip).HostName } catch {} }\n            return [PSCustomObject]@{ IP=$ip; Hostname=$hostname; RTT=$reply.RoundtripTime; Status='Online' }\n        }\n    } catch {}\n    return $null\n}\n\n$pool = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspacePool(1, $MaxThreads)\n$pool.Open()\n$jobs = @(); $counter = 0\n\nforeach ($ip in $allIPs) {\n    $counter++\n    $ps = [System.Management.Automation.PowerShell]::Create()\n    $ps.RunspacePool = $pool\n    [void]$ps.AddScript($scriptBlock).AddArgument($ip).AddArgument($TimeoutMs).AddArgument($ResolveNames)\n    $jobs += [PSCustomObject]@{ PS=$ps; Handle=$ps.BeginInvoke() }\n    if ($counter % 25 -eq 0 -or $counter -eq $allIPs.Count) {\n        Write-Progress -Activity \"Scanning $baseIP/$($subnet.Prefix)\" -Status \"$counter/$($allIPs.Count)\" -PercentComplete ([int](($counter/$allIPs.Count)*100))\n    }\n}\n\n$results = @()\nforeach ($job in $jobs) {\n    $r = $job.PS.EndInvoke($job.Handle); $job.PS.Dispose()\n    if ($r -and $r.Status -eq 'Online') { $results += $r }\n}\n$pool.Close(); $pool.Dispose()\nWrite-Progress -Activity 'Scanning' -Completed\n\n$elapsed = (Get-Date) - $startTime\n$sorted = $results | Sort-Object { [System.Version]$_.IP }\n\nWrite-Host \"\"\nWrite-Host \"Found $($results.Count) devices  |  Time: $([math]::Round($elapsed.TotalSeconds,1))s\" -ForegroundColor Green\nWrite-Host (\"{0,-18} {1,-45} {2}\" -f 'IP Address','Hostname','RTT (ms)') -ForegroundColor Yellow\nforeach ($dev in $sorted) {\n    $name = if ($dev.Hostname) { $dev.Hostname } else { '(no DNS)' }\n    $rttColor = if ($dev.RTT -lt 5) {'Green'} elseif ($dev.RTT -lt 50) {'Cyan'} else {'Yellow'}\n    Write-Host (\"{0,-18} {1,-45} \" -f $dev.IP,$name) -NoNewline -ForegroundColor White\n    Write-Host $dev.RTT -ForegroundColor $rttColor\n}\nreturn $sorted"
+  },
 
-  function checkPassword() {
-    if(passwordInput.value.trim() === password){
-      loginForm.style.display = 'none';
-      app.style.display = 'flex';
-      errorMsg.textContent = '';
-      passwordInput.value = '';
-    } else {
-      errorMsg.textContent = 'סיסמה שגויה';
-    }
+  mbAutomation: {
+    desc: "מוריד, מתקין, מריץ סריקה, מסגר איומים ומסיר את Malwarebytes אוטומטית",
+    code: "#Requires -RunAsAdministrator\nAdd-Type -AssemblyName UIAutomationClient\nAdd-Type -AssemblyName UIAutomationTypes\nAdd-Type -AssemblyName System.Windows.Forms\n\n$LogFolder    = \"C:\\MBlogsForBee\"\n$ComputerName = $env:COMPUTERNAME\n$Date         = Get-Date -Format \"yyyy-MM-dd_HHmm\"\n$LogPath      = \"$LogFolder\\Malwarebytes_${ComputerName}_${Date}.txt\"\n$DownloadURL  = \"https://downloads.malwarebytes.com/file/mb-windows\"\n$InstallerPath= \"$env:TEMP\\MBSetup.exe\"\n\nif (!(Test-Path $LogFolder)) { New-Item -Path $LogFolder -ItemType Directory -Force | Out-Null }\n\nfunction Wait-ForWindow { param([string]$Title,[int]$Timeout=60)\n    $end=[DateTime]::Now.AddSeconds($Timeout)\n    while([DateTime]::Now -lt $end){\n        $w=Get-Process|Where-Object{$_.MainWindowTitle -like \"*$Title*\"}|Select-Object -First 1\n        if($w){return $w}; Start-Sleep -Milliseconds 500\n    }; return $null }\n\nfunction Click-UIElement { param($El)\n    try{$El.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke();return $true}\n    catch{try{$El.GetCurrentPattern([System.Windows.Automation.LegacyIAAccessiblePattern]::Pattern).DoDefaultAction();return $true}catch{return $false}} }\n\nfunction Find-UIElement { param($Root,[string]$Name,[int]$Timeout=30)\n    $end=[DateTime]::Now.AddSeconds($Timeout)\n    while([DateTime]::Now -lt $end){\n        try{\n            $c=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty,$Name)\n            $el=$Root.FindFirst([System.Windows.Automation.TreeScope]::Descendants,$c)\n            if($el){return $el}\n        }catch{}; Start-Sleep -Milliseconds 500\n    }; return $null }\n\nWrite-Host \"Downloading Malwarebytes...\"\n$wc=New-Object System.Net.WebClient\n$t=$wc.DownloadFileTaskAsync($DownloadURL,$InstallerPath)\nwhile(!$t.IsCompleted){Write-Host \".\" -NoNewline -ForegroundColor Green; Start-Sleep 1}\nWrite-Host \"\"; Write-Host \"Download complete\" -ForegroundColor Green\n\nWrite-Host \"Installing...\"\n$p=Start-Process $InstallerPath -ArgumentList \"/VERYSILENT /SUPPRESSMSGBOXES /NORESTART\" -PassThru\nwhile(!$p.HasExited){Write-Host \".\" -NoNewline; Start-Sleep 1}\nWrite-Host \"\"; Start-Sleep 5\n\n$MBPath=\"C:\\Program Files\\Malwarebytes\\Anti-Malware\\mbam.exe\"\nif(!(Test-Path $MBPath)){Write-Host \"Malwarebytes not found\" -ForegroundColor Red; exit 1}\n\nStart-Process $MBPath; Start-Sleep 10\n$mbWin=Wait-ForWindow \"Malwarebytes\" 30\n$root=[System.Windows.Automation.AutomationElement]::RootElement\n$wc2=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty,$mbWin.MainWindowTitle)\n$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)\n\nforeach($step in @(\"Get started\",\"Maybe later\",\"Continue with free trial\",\"Got it\",\"Skip\")){\n    Write-Host \"Step: $step\"\n    $mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)\n    $btn=Find-UIElement $mbEl $step 10\n    if($btn){Click-UIElement $btn; Start-Sleep 3}\n}\n\nWrite-Host \"Starting scan...\"\n$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)\nforeach($txt in @(\"Scan\",\"Scan now\",\"Start scan\")){\n    $btn=Find-UIElement $mbEl $txt 5\n    if($btn){Click-UIElement $btn; Write-Host \"Scan started\" -ForegroundColor Green; break}\n}\n\n$end=[DateTime]::Now.AddMinutes(30)\nwhile([DateTime]::Now -lt $end){\n    $mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)\n    if(Find-UIElement $mbEl \"Scan is Complete!\" 2){Write-Host \"Scan complete\" -ForegroundColor Green; break}\n    Start-Sleep 5; Write-Host \".\" -NoNewline\n}\nStart-Sleep 3\n\n$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)\n$done=Find-UIElement $mbEl \"Done\" 10; if($done){Click-UIElement $done; Start-Sleep 3}\n\n$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)\n$q=Find-UIElement $mbEl \"Quarantine\" 5\nif($q){Write-Host \"Quarantining...\" -ForegroundColor Yellow; Click-UIElement $q; Start-Sleep 5}\n\n\"Scan complete\" | Out-File $LogPath -Encoding UTF8\n\n$us=(Get-ItemProperty \"HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" |\n    Where-Object{$_.DisplayName -like \"*Malwarebytes*\"}|Select-Object -First 1).UninstallString\nif($us){Start-Process($us -replace '\"','')}\nif(Test-Path $InstallerPath){Remove-Item $InstallerPath -Force}\n\nStart-Sleep 2; Start-Process notepad.exe $LogPath\nWrite-Host \"Done!\" -ForegroundColor Green"
+  },
+
+  bitlockerAutomation: {
+    desc: "בודק סטטוס BitLocker על כונן C: ומאפשר הצפנה/פענוח עם מעקב התקדמות",
+    code: "$logFolder = \"C:\\BitLockerBee\"\n$logFile = \"$logFolder\\BitLockerLog_C_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt\"\nif (-not (Test-Path $logFolder)) { New-Item -ItemType Directory -Path $logFolder -Force | Out-Null }\n\nWrite-Host \"=== BitLocker Automation ===\" -ForegroundColor Cyan\n$s = Get-BitLockerVolume -MountPoint \"C:\"\nWrite-Host \"Status: $($s.ProtectionStatus) | Volume: $($s.VolumeStatus) | $($s.EncryptionPercentage)%\"\n\n$shouldDecrypt = $false\n\nif ($s.VolumeStatus -eq \"EncryptionInProgress\") {\n    Write-Host \"BitLocker is ENCRYPTING ($($s.EncryptionPercentage)%)\" -ForegroundColor Yellow\n    if ((Read-Host \"Stop and disable? (Y/N)\") -match '^[Yy]') { Disable-BitLocker -MountPoint \"C:\"; $shouldDecrypt=$true }\n\n} elseif ($s.VolumeStatus -eq \"FullyEncrypted\" -and $s.ProtectionStatus -eq \"On\") {\n    Write-Host \"BitLocker ACTIVE\" -ForegroundColor Green\n    if ((Read-Host \"Disable and decrypt? (Y/N)\") -match '^[Yy]') { Disable-BitLocker -MountPoint \"C:\"; $shouldDecrypt=$true }\n\n} elseif ($s.VolumeStatus -eq \"FullyEncrypted\" -and $s.ProtectionStatus -eq \"Off\") {\n    Write-Host \"Encrypted but protection is OFF\" -ForegroundColor Yellow\n    if ((Read-Host \"Start decryption? (Y/N)\") -match '^[Yy]') { Disable-BitLocker -MountPoint \"C:\"; $shouldDecrypt=$true }\n\n} elseif ($s.VolumeStatus -eq \"DecryptionInProgress\") {\n    Write-Host \"Already decrypting...\" -ForegroundColor Yellow; $shouldDecrypt=$true\n\n} elseif ($s.VolumeStatus -eq \"FullyDecrypted\") {\n    Write-Host \"Drive already decrypted\" -ForegroundColor Green\n}\n\nif ($shouldDecrypt) {\n    Start-Sleep 5\n    do {\n        $s = Get-BitLockerVolume -MountPoint \"C:\"\n        $pct = 100 - $s.EncryptionPercentage\n        Write-Progress -Activity \"Decrypting C:\" -Status \"$($s.EncryptionPercentage)% remaining\" -PercentComplete $pct\n        Write-Host \"Progress: $pct%\" -ForegroundColor Cyan\n        Start-Sleep 10\n    } while ($s.VolumeStatus -ne \"FullyDecrypted\")\n    Write-Host \"Done!\" -ForegroundColor Green\n}\n\n\"Done\" | Out-File $logFile -Encoding UTF8\nStart-Process notepad.exe $logFile"
+  },
+
+  bitlockerReport: {
+    desc: "מייצר דוח עם פרטי חומרה, סטטוס BitLocker ומפתחות שחזור — ושולח במייל",
+    code: "#Requires -RunAsAdministrator\n$EmailFrom   = \"hd@b-tgs.co.il\"\n$EmailTo     = \"hd@b-tgs.co.il\"\n$SMTPServer  = \"smtp.gmail.com\"\n$SMTPPort    = 587\n$AppPassword = \"\"   # <-- הכנס App Password של Gmail\n$ReportFolder= \"C:\\BitLockerReports\"\n\nif (!(Test-Path $ReportFolder)) { New-Item -ItemType Directory -Path $ReportFolder -Force | Out-Null }\n$ComputerName   = $env:COMPUTERNAME\n$DateTime       = Get-Date -Format \"yyyy-MM-dd_HH-mm-ss\"\n$DateTimeHebrew = Get-Date -Format \"dd/MM/yyyy HH:mm:ss\"\n\nWrite-Host \"===== BitLocker Report - $ComputerName =====\" -ForegroundColor Cyan\n\nWrite-Host \"[1/4] Hardware info...\" -ForegroundColor Green\n$ci = Get-CimInstance Win32_ComputerSystem\n$bi = Get-CimInstance Win32_BIOS\n$di = Get-PhysicalDisk | Where-Object { $_.MediaType -in 'SSD','HDD' } | Select-Object -First 1\n$ni = Get-CimInstance Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -and $_.MACAddress } | Select-Object -First 1\n$Manufacturer = $ci.Manufacturer; $Model=$ci.Model; $Serial=$bi.SerialNumber\n$DiskModel = if($di){$di.FriendlyName}else{\"Unknown\"}\n$DiskSerial= if($di){$di.SerialNumber}else{\"Unknown\"}\n$MAC = if($ni){$ni.MACAddress}else{\"Unknown\"}\nWrite-Host \"  $Manufacturer $Model | SN: $Serial\" -ForegroundColor Gray\n\nWrite-Host \"[2/4] BitLocker status...\" -ForegroundColor Green\n$volumes = Get-BitLockerVolume | Where-Object { $_.VolumeType -in 'OperatingSystem','Data' }\n$BLData  = @()\nforeach ($v in $volumes) {\n    $rk = \"Not found\"\n    if ($v.ProtectionStatus -eq 'On') {\n        $kp = $v.KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }\n        if ($kp) { $rk = ($kp | Select-Object -First 1).RecoveryPassword }\n    }\n    $statusHe = if($v.ProtectionStatus -eq 'On'){\"מופעל\"}else{\"כבוי\"}\n    Write-Host \"  Drive $($v.MountPoint): $statusHe ($($v.EncryptionPercentage)%)\" -ForegroundColor Gray\n    $BLData += [PSCustomObject]@{ Drive=$v.MountPoint; Status=$statusHe; Pct=$v.EncryptionPercentage; Key=$rk }\n}\n\nWrite-Host \"[3/4] Saving report...\" -ForegroundColor Green\n$txtPath = \"$ReportFolder\\${ComputerName}_$DateTime.txt\"\n$report  = \"BitLocker Report - $ComputerName`n$DateTimeHebrew`n$('='*40)`n\"\n$report += \"Manufacturer : $Manufacturer`nModel        : $Model`nSerial       : $Serial`n\"\n$report += \"Disk         : $DiskModel ($DiskSerial)`nMAC          : $MAC`n`n\"\nforeach ($v in $BLData) {\n    $report += \"Drive $($v.Drive) : $($v.Status) ($($v.Pct)%)`nRecovery Key : $($v.Key)`n`n\"\n}\n$report | Out-File $txtPath -Encoding UTF8\nWrite-Host \"  Saved: $txtPath\" -ForegroundColor Gray\n\nWrite-Host \"[4/4] Sending email...\" -ForegroundColor Green\nif ($AppPassword -ne \"\") {\n    try {\n        $cred = New-Object System.Management.Automation.PSCredential($EmailFrom,\n            (ConvertTo-SecureString $AppPassword -AsPlainText -Force))\n        Send-MailMessage -From $EmailFrom -To $EmailTo `\n            -Subject \"BitLocker Report - $ComputerName - $DateTimeHebrew\" `\n            -Body (Get-Content $txtPath -Raw) `\n            -SmtpServer $SMTPServer -Port $SMTPPort -UseSsl -Credential $cred `\n            -Encoding UTF8 -Attachments $txtPath\n        Write-Host \"  Email sent!\" -ForegroundColor Green\n    } catch { Write-Host \"  Email failed: $($_.Exception.Message)\" -ForegroundColor Red }\n} else { Write-Host \"  App Password not set - skipping email\" -ForegroundColor Yellow }\n\nWrite-Host \"`n===== Done! =====\" -ForegroundColor Green\nStart-Process $txtPath"
+  },
+
+  stressGui: {
+    desc: "ממשק גרפי לבדיקת עומס מעבד עם מדידת טמפרטורה בזמן אמת (הרץ כאדמין)",
+    code: "Add-Type -AssemblyName PresentationFramework\nAdd-Type -AssemblyName System.Windows.Forms\n\n$tempMonitorPath = \"$env:USERPROFILE\\AppData\\Local\\TempMonitor\"\n$libPath = \"$tempMonitorPath\\LibreHardwareMonitorLib.dll\"\n\nif (-not (Test-Path $libPath)) {\n    [System.Windows.MessageBox]::Show(\"Downloading temperature library...`nThis will take a moment.\",\"First Run Setup\",\"OK\",\"Information\")\n    New-Item -ItemType Directory -Path $tempMonitorPath -Force | Out-Null\n    $url = \"https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases/download/v0.9.3/LibreHardwareMonitor-net472.zip\"\n    $zipPath = \"$tempMonitorPath\\lhm.zip\"\n    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\n    Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing\n    Expand-Archive -Path $zipPath -DestinationPath $tempMonitorPath -Force\n    Remove-Item $zipPath -Force\n}\n\nAdd-Type -Path $libPath\n$computer = New-Object LibreHardwareMonitor.Hardware.Computer\n$computer.IsCpuEnabled = $true\n$computer.Open()\n\n# הסקריפט המלא כולל XAML GUI נמצא בקובץ stressGui.ps1\n# הרץ את הקובץ ישירות עם PowerShell כאדמין לקבלת הממשק הגרפי המלא\n\nWrite-Host \"Current CPU Temperatures:\" -ForegroundColor Cyan\nforeach ($hw in $computer.Hardware) {\n    $hw.Update()\n    foreach ($s in $hw.Sensors) {\n        if ($s.SensorType -eq [LibreHardwareMonitor.Hardware.SensorType]::Temperature) {\n            Write-Host \"  $($s.Name): $([math]::Round($s.Value,1))C\" -ForegroundColor Yellow\n        }\n    }\n}\n$computer.Close()"
+  },
+
+  deleteTemp: {
+    desc: "מוחק קבצים זמניים של המשתמש ושל המערכת לפינוי מקום",
+    code: "@echo off\necho Deleting temp files...\n\n:: Delete user temp files\ndel /s /q \"%USERPROFILE%\\AppData\\Local\\Temp\\*\"\nrmdir /s /q \"%USERPROFILE%\\AppData\\Local\\Temp\"\nmkdir \"%USERPROFILE%\\AppData\\Local\\Temp\"\n\n:: Delete system temp files\ndel /s /q \"C:\\Windows\\Temp\\*\"\nrmdir /s /q \"C:\\Windows\\Temp\"\nmkdir \"C:\\Windows\\Temp\"\n\necho Done! Temp files deleted.\npause"
+  },
+
+  mailboxQuota: {
+    desc: "מתחבר ל-Exchange Online ומייצר דוח על שימוש במכסות — מתריע על תיבות מעל 80%",
+    code: "$threshold80 = 80\n$threshold90 = 90\n$reportPath  = \"C:\\MailboxQuotaReport\"\n\nif (!(Test-Path $reportPath)) { New-Item -ItemType Directory -Path $reportPath | Out-Null }\n\nWrite-Host \"Connecting to Exchange Online...\" -ForegroundColor Cyan\ntry {\n    Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop\n    Write-Host \"Connected!\" -ForegroundColor Green\n} catch { Write-Host \"Connection failed: $($_.Exception.Message)\" -ForegroundColor Red; exit }\n\n$mailboxes = Get-Mailbox -RecipientTypeDetails UserMailbox -ResultSize Unlimited\nWrite-Host \"Found $($mailboxes.Count) mailboxes\" -ForegroundColor Cyan\n\n$allResults = @()\nforeach ($mb in $mailboxes) {\n    Write-Host \"Checking $($mb.DisplayName)...\" -ForegroundColor Gray\n    if ($mb.ProhibitSendReceiveQuota -eq \"Unlimited\") { continue }\n\n    $stats = Get-MailboxStatistics $mb.Identity\n    $sizeStr  = $stats.TotalItemSize.ToString()\n    $quotaStr = $mb.ProhibitSendReceiveQuota.ToString()\n\n    if ($sizeStr  -notmatch '([\\d,]+)\\s*bytes') { continue }; $totalSize = [double]($matches[1] -replace ',','')\n    if ($quotaStr -notmatch '([\\d,]+)\\s*bytes') { continue }; $quota     = [double]($matches[1] -replace ',','')\n\n    $pct    = [math]::Round(($totalSize / $quota) * 100, 2)\n    $status = if($pct -ge $threshold90){\"Critical\"}elseif($pct -ge $threshold80){\"Warning\"}else{\"OK\"}\n    $color  = if($status -eq \"Critical\"){\"Red\"}elseif($status -eq \"Warning\"){\"Yellow\"}else{\"Green\"}\n    Write-Host \"  $($mb.DisplayName): $pct% - $status\" -ForegroundColor $color\n\n    $allResults += [PSCustomObject]@{\n        DisplayName   = $mb.DisplayName\n        Email         = $mb.PrimarySmtpAddress\n        CurrentSizeGB = [math]::Round($totalSize/1GB,2)\n        MaxQuotaGB    = [math]::Round($quota/1GB,2)\n        PercentUsed   = $pct\n        Status        = $status\n    }\n}\n\n$allResults = $allResults | Sort-Object PercentUsed -Descending\n$alerts     = $allResults | Where-Object { $_.PercentUsed -ge $threshold80 }\n\nDisconnect-ExchangeOnline -Confirm:$false\n\nWrite-Host \"\"\nWrite-Host \"Total: $($allResults.Count)  |  Over 80%: $($alerts.Count)\" -ForegroundColor Cyan\n$allResults | Format-Table DisplayName, Email, PercentUsed, Status -AutoSize"
   }
 
-  const scripts = {
-
-    networkScan: {
-      desc: "סורק את כל המכשירים ברשת המקומית עם Ping מקבילי — מציג IP, שם מחשב וזמן תגובה",
-      code: `#Requires -Version 5.1
-[CmdletBinding()]
-param(
-    [int]$MaxThreads  = 254,
-    [int]$TimeoutMs   = 800,
-    [switch]$ResolveNames = $true
-)
-
-function Get-LocalSubnets {
-    $subnets = @()
-    $adapters = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
-        Where-Object { $_.IPAddress -notmatch '^(127\.|169\.254\.)' -and $_.PrefixLength -lt 32 }
-    foreach ($a in $adapters) {
-        $prefix     = $a.PrefixLength
-        $ipInt      = [System.Convert]::ToUInt32((($a.IPAddress.Split('.') | ForEach-Object { [System.Convert]::ToString([int]$_, 2).PadLeft(8,'0') }) -join ''), 2)
-        $maskInt    = [System.Convert]::ToUInt32(('1' * $prefix + '0' * (32 - $prefix)), 2)
-        $networkInt = $ipInt -band $maskInt
-        $b = [System.BitConverter]::GetBytes($networkInt)
-        [array]::Reverse($b)
-        $network = $b -join '.'
-        $hostCount = [Math]::Pow(2, 32 - $prefix) - 2
-        if ($hostCount -lt 1 -or $hostCount -gt 1022) { continue }
-        $subnets += [PSCustomObject]@{ Network=$network; Prefix=$prefix; HostCount=[int]$hostCount; Adapter=$a.InterfaceAlias }
-    }
-    return $subnets
-}
-
-$subnets = Get-LocalSubnets
-if ($subnets.Count -eq 0) { Write-Warning "No valid local subnet found"; exit 1 }
-$subnet    = $subnets | Sort-Object HostCount -Descending | Select-Object -First 1
-$baseIP    = $subnet.Network
-$hostCount = $subnet.HostCount
-
-Write-Host "Adapter : $($subnet.Adapter)" -ForegroundColor Gray
-Write-Host "Segment : $baseIP/$($subnet.Prefix)" -ForegroundColor Gray
-Write-Host "Hosts   : $hostCount addresses to scan" -ForegroundColor Gray
-
-$startTime = Get-Date
-$baseInt = [System.Convert]::ToUInt32((($baseIP.Split('.') | ForEach-Object { [System.Convert]::ToString([int]$_, 2).PadLeft(8,'0') }) -join ''), 2)
-$allIPs  = @()
-for ($i = 1; $i -le $hostCount; $i++) {
-    $ipInt = $baseInt + $i
-    $b = [System.BitConverter]::GetBytes($ipInt)
-    [array]::Reverse($b)
-    $allIPs += ($b -join '.')
-}
-
-$scriptBlock = {
-    param($ip, $timeoutMs, $resolveNames)
-    try {
-        $ping  = New-Object System.Net.NetworkInformation.Ping
-        $reply = $ping.Send($ip, $timeoutMs)
-        $ping.Dispose()
-        if ($reply.Status -eq 'Success') {
-            $hostname = ''
-            if ($resolveNames) { try { $hostname = [System.Net.Dns]::GetHostEntry($ip).HostName } catch { } }
-            return [PSCustomObject]@{ IP=$ip; Hostname=$hostname; RTT=$reply.RoundtripTime; Status='Online' }
-        }
-    } catch { }
-    return $null
-}
-
-$pool = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspacePool(1, $MaxThreads)
-$pool.Open()
-$jobs = @(); $counter = 0
-
-foreach ($ip in $allIPs) {
-    $counter++
-    $ps = [System.Management.Automation.PowerShell]::Create()
-    $ps.RunspacePool = $pool
-    [void]$ps.AddScript($scriptBlock).AddArgument($ip).AddArgument($TimeoutMs).AddArgument($ResolveNames)
-    $jobs += [PSCustomObject]@{ PS=$ps; Handle=$ps.BeginInvoke() }
-    if ($counter % 25 -eq 0 -or $counter -eq $allIPs.Count) {
-        Write-Progress -Activity "Scanning $baseIP/$($subnet.Prefix)" -Status "$counter/$($allIPs.Count)" -PercentComplete ([int](($counter/$allIPs.Count)*100))
-    }
-}
-
-$results = @()
-foreach ($job in $jobs) {
-    $r = $job.PS.EndInvoke($job.Handle); $job.PS.Dispose()
-    if ($r -and $r.Status -eq 'Online') { $results += $r }
-}
-$pool.Close(); $pool.Dispose()
-Write-Progress -Activity "Scanning" -Completed
-
-$elapsed = (Get-Date) - $startTime
-$sorted  = $results | Sort-Object { [System.Version]$_.IP }
-
-Write-Host ""
-Write-Host "Found $($results.Count) devices  |  Time: $([math]::Round($elapsed.TotalSeconds,1))s" -ForegroundColor Green
-Write-Host ("{0,-18} {1,-45} {2}" -f "IP Address","Hostname","RTT (ms)") -ForegroundColor Yellow
-Write-Host ("{0,-18} {1,-45} {2}" -f ("─"*16),("─"*43),("─"*8)) -ForegroundColor DarkGray
-foreach ($dev in $sorted) {
-    $name = if ($dev.Hostname) { $dev.Hostname } else { "(no DNS)" }
-    $rttColor = if ($dev.RTT -lt 5) {'Green'} elseif ($dev.RTT -lt 50) {'Cyan'} else {'Yellow'}
-    Write-Host ("{0,-18} {1,-45} " -f $dev.IP,$name) -NoNewline -ForegroundColor White
-    Write-Host $dev.RTT -ForegroundColor $rttColor
-}
-return $sorted`
-    },
-
-    mbAutomation: {
-      desc: "מוריד, מתקין, מריץ סריקה, מסגר איומים ומסיר את Malwarebytes אוטומטית",
-      code: `#Requires -RunAsAdministrator
-Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,System.Windows.Forms
-
-$LogFolder    = "C:\MBlogsForBee"
-$ComputerName = $env:COMPUTERNAME
-$Date         = Get-Date -Format "yyyy-MM-dd_HHmm"
-$LogPath      = "$LogFolder\Malwarebytes_${ComputerName}_${Date}.txt"
-$DownloadURL  = "https://downloads.malwarebytes.com/file/mb-windows"
-$InstallerPath= "$env:TEMP\MBSetup.exe"
-
-if (!(Test-Path $LogFolder)) { New-Item -Path $LogFolder -ItemType Directory -Force | Out-Null }
-
-function Wait-ForWindow { param([string]$Title,[int]$Timeout=60)
-    $end=[DateTime]::Now.AddSeconds($Timeout)
-    while([DateTime]::Now -lt $end){$w=Get-Process|Where-Object{$_.MainWindowTitle -like "*$Title*"}|Select-Object -First 1;if($w){return $w};Start-Sleep -Milliseconds 500}
-    return $null }
-
-function Click-UIElement { param($El)
-    try{$El.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke();return $true}
-    catch{try{$El.GetCurrentPattern([System.Windows.Automation.LegacyIAAccessiblePattern]::Pattern).DoDefaultAction();return $true}catch{return $false}} }
-
-function Find-UIElement { param($Root,[string]$Name,[int]$Timeout=30)
-    $end=[DateTime]::Now.AddSeconds($Timeout)
-    while([DateTime]::Now -lt $end){
-        try{$c=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty,$Name)
-        $el=$Root.FindFirst([System.Windows.Automation.TreeScope]::Descendants,$c);if($el){return $el}}catch{}
-        Start-Sleep -Milliseconds 500}return $null }
-
-Write-Host "Downloading Malwarebytes..."
-$wc=New-Object System.Net.WebClient; $t=$wc.DownloadFileTaskAsync($DownloadURL,$InstallerPath)
-while(!$t.IsCompleted){Write-Host "." -NoNewline -ForegroundColor Green;Start-Sleep 1}
-Write-Host ""; Write-Host "Download complete" -ForegroundColor Green
-
-Write-Host "Installing..."
-$p=Start-Process $InstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -PassThru
-while(!$p.HasExited){Write-Host "." -NoNewline;Start-Sleep 1}
-Write-Host ""; Start-Sleep 5
-
-$MBPath="C:\Program Files\Malwarebytes\Anti-Malware\mbam.exe"
-if(!(Test-Path $MBPath)){Write-Host "Malwarebytes not found" -ForegroundColor Red;exit 1}
-
-Start-Process $MBPath; Start-Sleep 10
-$mbWin=Wait-ForWindow "Malwarebytes" 30
-$root=[System.Windows.Automation.AutomationElement]::RootElement
-$wc2=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty,$mbWin.MainWindowTitle)
-$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)
-
-foreach($step in @("Get started","Maybe later","Continue with free trial","Got it","Skip")){
-    Write-Host "Step: $step"
-    $mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)
-    $btn=Find-UIElement $mbEl $step 10
-    if($btn){Click-UIElement $btn;Start-Sleep 3}
-}
-
-Write-Host "Starting scan..."
-$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)
-foreach($txt in @("Scan","Scan now","Start scan")){
-    $btn=Find-UIElement $mbEl $txt 5
-    if($btn){Click-UIElement $btn;Write-Host "Scan started" -ForegroundColor Green;break}
-}
-
-$end=[DateTime]::Now.AddMinutes(30)
-while([DateTime]::Now -lt $end){
-    $mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)
-    if(Find-UIElement $mbEl "Scan is Complete!" 2){Write-Host "Scan complete" -ForegroundColor Green;break}
-    Start-Sleep 5;Write-Host "." -NoNewline
-}
-Start-Sleep 3
-
-$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)
-$done=Find-UIElement $mbEl "Done" 10;if($done){Click-UIElement $done;Start-Sleep 3}
-
-$mbEl=$root.FindFirst([System.Windows.Automation.TreeScope]::Children,$wc2)
-$q=Find-UIElement $mbEl "Quarantine" 5;if($q){Write-Host "Quarantining..." -ForegroundColor Yellow;Click-UIElement $q;Start-Sleep 5}
-
-"Scan complete" | Out-File $LogPath -Encoding UTF8
-
-$us=(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" |
-    Where-Object{$_.DisplayName -like "*Malwarebytes*"}|Select-Object -First 1).UninstallString
-if($us){Start-Process($us -replace '"','')}
-if(Test-Path $InstallerPath){Remove-Item $InstallerPath -Force}
-
-Start-Sleep 2; Start-Process notepad.exe $LogPath
-Write-Host "Done!" -ForegroundColor Green`
-    },
-
-    bitlockerAutomation: {
-      desc: "בודק סטטוס BitLocker על כונן C: ומאפשר הצפנה/פענוח עם מעקב התקדמות",
-      code: `$logFolder = "C:\BitLockerBee"
-$logFile = "$logFolder\BitLockerLog_C_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
-if (-not (Test-Path $logFolder)) { New-Item -ItemType Directory -Path $logFolder -Force | Out-Null }
-
-Write-Host "=== BitLocker Automation ===" -ForegroundColor Cyan
-$s = Get-BitLockerVolume -MountPoint "C:"
-Write-Host "Status: $($s.ProtectionStatus) | Volume: $($s.VolumeStatus) | $($s.EncryptionPercentage)%" -ForegroundColor White
-
-$shouldDecrypt = $false
-
-if ($s.VolumeStatus -eq "EncryptionInProgress") {
-    Write-Host "BitLocker is ENCRYPTING ($($s.EncryptionPercentage)%)" -ForegroundColor Yellow
-    if ((Read-Host "Stop and disable BitLocker? (Y/N)") -match '^[Yy]') { Disable-BitLocker -MountPoint "C:"; $shouldDecrypt=$true }
-
-} elseif ($s.VolumeStatus -eq "FullyEncrypted" -and $s.ProtectionStatus -eq "On") {
-    Write-Host "BitLocker ACTIVE - fully encrypted" -ForegroundColor Green
-    if ((Read-Host "Disable and decrypt? (Y/N)") -match '^[Yy]') { Disable-BitLocker -MountPoint "C:"; $shouldDecrypt=$true }
-
-} elseif ($s.VolumeStatus -eq "FullyEncrypted" -and $s.ProtectionStatus -eq "Off") {
-    Write-Host "Encrypted but protection is OFF" -ForegroundColor Yellow
-    if ((Read-Host "Start decryption? (Y/N)") -match '^[Yy]') { Disable-BitLocker -MountPoint "C:"; $shouldDecrypt=$true }
-
-} elseif ($s.VolumeStatus -eq "DecryptionInProgress") {
-    Write-Host "Already decrypting..." -ForegroundColor Yellow; $shouldDecrypt=$true
-
-} elseif ($s.VolumeStatus -eq "FullyDecrypted") {
-    Write-Host "Drive already decrypted - nothing to do" -ForegroundColor Green
-}
-
-if ($shouldDecrypt) {
-    Write-Host "Monitoring decryption..." -ForegroundColor Yellow
-    Start-Sleep 5
-    do {
-        $s = Get-BitLockerVolume -MountPoint "C:"
-        $pct = 100 - $s.EncryptionPercentage
-        Write-Progress -Activity "Decrypting C:" -Status "$($s.EncryptionPercentage)% remaining" -PercentComplete $pct
-        Write-Host "Progress: $pct% complete" -ForegroundColor Cyan
-        Start-Sleep 10
-    } while ($s.VolumeStatus -ne "FullyDecrypted")
-    Write-Host "Drive fully decrypted!" -ForegroundColor Green
-}
-
-"Done" | Out-File $logFile -Encoding UTF8
-Start-Process notepad.exe $logFile`
-    },
-
-    bitlockerReport: {
-      desc: "מייצר דוח עם פרטי חומרה, סטטוס BitLocker ומפתחות שחזור — ושולח במייל",
-      code: `#Requires -RunAsAdministrator
-$EmailFrom   = "hd@b-tgs.co.il"
-$EmailTo     = "hd@b-tgs.co.il"
-$SMTPServer  = "smtp.gmail.com"
-$SMTPPort    = 587
-$AppPassword = ""   # <-- הכנס App Password של Gmail
-$ReportFolder= "C:\BitLockerReports"
-
-if (!(Test-Path $ReportFolder)) { New-Item -ItemType Directory -Path $ReportFolder -Force | Out-Null }
-$ComputerName    = $env:COMPUTERNAME
-$DateTime        = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$DateTimeHebrew  = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
-
-Write-Host "===== BitLocker Report - $ComputerName =====" -ForegroundColor Cyan
-
-Write-Host "[1/4] Hardware info..." -ForegroundColor Green
-$ci  = Get-CimInstance Win32_ComputerSystem
-$bi  = Get-CimInstance Win32_BIOS
-$di  = Get-PhysicalDisk | Where-Object { $_.MediaType -in 'SSD','HDD' } | Select-Object -First 1
-$ni  = Get-CimInstance Win32_NetworkAdapter | Where-Object { $_.PhysicalAdapter -and $_.MACAddress } | Select-Object -First 1
-$Manufacturer = $ci.Manufacturer; $Model=$ci.Model; $Serial=$bi.SerialNumber
-$DiskModel = if($di){$di.FriendlyName}else{"Unknown"}
-$DiskSerial= if($di){$di.SerialNumber}else{"Unknown"}
-$MAC = if($ni){$ni.MACAddress}else{"Unknown"}
-Write-Host "  $Manufacturer $Model | SN: $Serial" -ForegroundColor Gray
-
-Write-Host "[2/4] BitLocker status..." -ForegroundColor Green
-$volumes = Get-BitLockerVolume | Where-Object { $_.VolumeType -in 'OperatingSystem','Data' }
-$BLData  = @()
-foreach ($v in $volumes) {
-    $rk = "Not found"
-    if ($v.ProtectionStatus -eq 'On') {
-        $kp = $v.KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }
-        if ($kp) { $rk = ($kp | Select-Object -First 1).RecoveryPassword }
-    }
-    $statusHe = if($v.ProtectionStatus -eq 'On'){"מופעל"}else{"כבוי"}
-    Write-Host "  Drive $($v.MountPoint): $statusHe ($($v.EncryptionPercentage)%)" -ForegroundColor Gray
-    $BLData += [PSCustomObject]@{ Drive=$v.MountPoint; Status=$statusHe; Pct=$v.EncryptionPercentage; Key=$rk }
-}
-
-Write-Host "[3/4] Saving report..." -ForegroundColor Green
-$txtPath = "$ReportFolder\${ComputerName}_$DateTime.txt"
-$report  = "BitLocker Report - $ComputerName`n$DateTimeHebrew`n"
-$report += "=$("="*40)`n"
-$report += "Manufacturer : $Manufacturer`nModel        : $Model`nSerial       : $Serial`n"
-$report += "Disk         : $DiskModel ($DiskSerial)`nMAC          : $MAC`n`n"
-foreach ($v in $BLData) {
-    $report += "Drive $($v.Drive) : $($v.Status) ($($v.Pct)%)`nRecovery Key : $($v.Key)`n`n"
-}
-$report | Out-File $txtPath -Encoding UTF8
-Write-Host "  Saved: $txtPath" -ForegroundColor Gray
-
-Write-Host "[4/4] Sending email..." -ForegroundColor Green
-if ($AppPassword -ne "") {
-    try {
-        $cred = New-Object System.Management.Automation.PSCredential($EmailFrom,
-            (ConvertTo-SecureString $AppPassword -AsPlainText -Force))
-        Send-MailMessage -From $EmailFrom -To $EmailTo `
-            -Subject "BitLocker Report - $ComputerName - $DateTimeHebrew" `
-            -Body (Get-Content $txtPath -Raw) `
-            -SmtpServer $SMTPServer -Port $SMTPPort -UseSsl -Credential $cred `
-            -Encoding UTF8 -Attachments $txtPath
-        Write-Host "  Email sent to $EmailTo" -ForegroundColor Green
-    } catch { Write-Host "  Email failed: $($_.Exception.Message)" -ForegroundColor Red }
-} else { Write-Host "  App Password not configured - skipping email" -ForegroundColor Yellow }
-
-Write-Host "`n===== Done! =====" -ForegroundColor Green
-Start-Process $txtPath`
-    },
-
-    stressGui: {
-      desc: "ממשק גרפי לבדיקת עומס מעבד עם מדידת טמפרטורה בזמן אמת (דורש הרצה כאדמין)",
-      code: `Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName System.Windows.Forms
-
-$tempMonitorPath = "$env:USERPROFILE\AppData\Local\TempMonitor"
-$libPath = "$tempMonitorPath\LibreHardwareMonitorLib.dll"
-
-if (-not (Test-Path $libPath)) {
-    [System.Windows.MessageBox]::Show("Downloading temperature library...`nThis will take a moment.","First Run Setup","OK","Information")
-    New-Item -ItemType Directory -Path $tempMonitorPath -Force | Out-Null
-    $url = "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases/download/v0.9.3/LibreHardwareMonitor-net472.zip"
-    $zipPath = "$tempMonitorPath\lhm.zip"
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing
-    Expand-Archive -Path $zipPath -DestinationPath $tempMonitorPath -Force
-    Remove-Item $zipPath -Force
-}
-
-Add-Type -Path $libPath
-$computer = New-Object LibreHardwareMonitor.Hardware.Computer
-$computer.IsCpuEnabled = $true
-$computer.Open()
-
-# --- כאן ממשיך קוד ה-XAML המלא של ה-GUI ---
-# הרץ את הקובץ stressGui.ps1 כאדמין לקבלת הממשק הגרפי המלא
-
-function Get-CPUTemp {
-    $temps = @()
-    foreach ($hw in $computer.Hardware) {
-        $hw.Update()
-        foreach ($s in $hw.Sensors) {
-            if ($s.SensorType -eq [LibreHardwareMonitor.Hardware.SensorType]::Temperature) {
-                $temps += [math]::Round($s.Value, 1)
-            }
-        }
-    }
-    return $temps
-}
-
-Write-Host "CPU Temperatures:" -ForegroundColor Cyan
-Get-CPUTemp | ForEach-Object { Write-Host "  $_°C" -ForegroundColor Yellow }
-$computer.Close()`
-    },
-
-    deleteTemp: {
-      desc: "מוחק קבצים זמניים של המשתמש ושל המערכת לפינוי מקום",
-      code: `@echo off
-echo Deleting temp files...
-
-:: Delete user temp files
-del /s /q "%USERPROFILE%\AppData\Local\Temp\*"
-rmdir /s /q "%USERPROFILE%\AppData\Local\Temp"
-mkdir "%USERPROFILE%\AppData\Local\Temp"
-
-:: Delete system temp files
-del /s /q "C:\Windows\Temp\*"
-rmdir /s /q "C:\Windows\Temp"
-mkdir "C:\Windows\Temp"
-
-echo Done! Temp files deleted.
-pause`
-    },
-
-    mailboxQuota: {
-      desc: "מתחבר ל-Exchange Online ומייצר דוח על שימוש במכסות — מתריע על תיבות מעל 80%",
-      code: `$threshold80 = 80
-$threshold90 = 90
-$reportPath  = "C:\MailboxQuotaReport"
-$reportFile  = "$reportPath\QuotaReport_$(Get-Date -Format 'yyyy-MM-dd_HHmm').html"
-
-if (!(Test-Path $reportPath)) { New-Item -ItemType Directory -Path $reportPath | Out-Null }
-
-Write-Host "Connecting to Exchange Online..." -ForegroundColor Cyan
-try {
-    Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop
-    Write-Host "Connected!" -ForegroundColor Green
-} catch { Write-Host "Connection failed: $($_.Exception.Message)" -ForegroundColor Red; exit }
-
-$mailboxes = Get-Mailbox -RecipientTypeDetails UserMailbox -ResultSize Unlimited
-Write-Host "Found $($mailboxes.Count) mailboxes" -ForegroundColor Cyan
-
-$allResults = @()
-foreach ($mb in $mailboxes) {
-    Write-Host "Checking $($mb.DisplayName)..." -ForegroundColor Gray
-    if ($mb.ProhibitSendReceiveQuota -eq "Unlimited") { continue }
-
-    $stats = Get-MailboxStatistics $mb.Identity
-    $sizeStr  = $stats.TotalItemSize.ToString()
-    $quotaStr = $mb.ProhibitSendReceiveQuota.ToString()
-
-    if ($sizeStr  -notmatch '([\d,]+)\s*bytes') { continue }; $totalSize = [double]($matches[1] -replace ',','')
-    if ($quotaStr -notmatch '([\d,]+)\s*bytes') { continue }; $quota     = [double]($matches[1] -replace ',','')
-
-    $pct    = [math]::Round(($totalSize / $quota) * 100, 2)
-    $status = if($pct -ge $threshold90){"Critical"}elseif($pct -ge $threshold80){"Warning"}else{"OK"}
-    $color  = if($status -eq "Critical"){"Red"}elseif($status -eq "Warning"){"Yellow"}else{"Green"}
-    Write-Host "  $pct% - $status" -ForegroundColor $color
-
-    $allResults += [PSCustomObject]@{
-        DisplayName   = $mb.DisplayName
-        Email         = $mb.PrimarySmtpAddress
-        CurrentSizeGB = [math]::Round($totalSize/1GB,2)
-        MaxQuotaGB    = [math]::Round($quota/1GB,2)
-        PercentUsed   = $pct
-        Status        = $status
-    }
-}
-
-$allResults = $allResults | Sort-Object PercentUsed -Descending
-$alerts     = $allResults | Where-Object { $_.PercentUsed -ge $threshold80 }
-
-Disconnect-ExchangeOnline -Confirm:$false
-
-Write-Host ""
-Write-Host "Total: $($allResults.Count)  |  Over 80%: $($alerts.Count)" -ForegroundColor Cyan
-$allResults | Format-Table DisplayName, Email, PercentUsed, Status -AutoSize`
-    }
-  };
-
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', e => {
-    const val = e.target.value.toLowerCase();
-    document.querySelectorAll('.item-button').forEach(btn => {
-      btn.style.display = btn.getAttribute('data-name').toLowerCase().includes(val) ? 'flex' : 'none';
-    });
+};
+
+document.getElementById('toggleSidebarBtn').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  var val = this.value.toLowerCase();
+  document.querySelectorAll('.item-button').forEach(function(btn) {
+    btn.style.display = btn.getAttribute('data-name').toLowerCase().indexOf(val) !== -1 ? 'flex' : 'none';
   });
+});
 
-  document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('collapsed');
+function showScript(key, btn) {
+  var s = scripts[key];
+  if (!s) return;
+  document.getElementById('scriptDisplay').value = s.code;
+  document.getElementById('scriptDesc').textContent = s.desc;
+  document.getElementById('copyBtn').style.display = 'inline-block';
+  document.querySelectorAll('.item-button').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function copyScript() {
+  var text = document.getElementById('scriptDisplay').value;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ הועתק!';
+    setTimeout(function() { btn.textContent = '📋 העתק סקריפט'; }, 2000);
   });
-
-  function showScript(key, btn) {
-    const s = scripts[key];
-    if (!s) return;
-    document.getElementById('scriptDisplay').value = s.code;
-    document.getElementById('scriptDesc').textContent = s.desc;
-    document.getElementById('copyBtn').style.display = 'inline-block';
-    document.querySelectorAll('.item-button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
-  function copyScript() {
-    const display = document.getElementById('scriptDisplay');
-    navigator.clipboard.writeText(display.value).then(() => {
-      const btn = document.getElementById('copyBtn');
-      btn.textContent = '✅ הועתק!';
-      setTimeout(() => { btn.textContent = '📋 העתק סקריפט'; }, 2000);
-    });
-  }
+}
 </script>
 </body>
 </html>
