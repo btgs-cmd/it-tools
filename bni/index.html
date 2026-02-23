@@ -207,6 +207,39 @@
     .badge.hardware  { background: #3a2e1e; color: #fb923c; }
     .badge.tip       { background: #1e3a3a; color: #22d3ee; }
 
+    /* ── Code block ── */
+    .code-block {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.82rem;
+      color: #7dd3fc;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-all;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover { background: #2563eb; color: #fff; }
+
     /* ── Tip box ── */
     .tip-box {
       background: #1e293b;
@@ -223,6 +256,40 @@
       color: #22d3ee;
       display: block;
       margin-bottom: 4px;
+    }
+
+    /* ── Site Nav ── */
+    .site-nav {
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .site-nav span {
+      font-size: 0.78rem;
+      color: #475569;
+      margin-left: 4px;
+    }
+
+    .site-nav a {
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: #1e293b;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.82rem;
+      border: 1px solid #334155;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .site-nav a:hover {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
     }
 
     /* ── Footer ── */
@@ -252,6 +319,16 @@
     </div>
   </header>
 
+  <!-- ── Site Navigation ── -->
+  <div class="site-nav">
+    <span>🔗 עמודים באתר:</span>
+    <a href="https://1007.co.il/1" target="_blank">עמוד 1</a>
+    <a href="https://1007.co.il/2" target="_blank">עמוד 2</a>
+    <a href="https://1007.co.il/3" target="_blank">עמוד 3</a>
+    <a href="https://1007.co.il/4" target="_blank">עמוד 4</a>
+    <a href="https://1007.co.il/5" target="_blank">עמוד 5</a>
+  </div>
+
   <!-- ── Search ── -->
   <div class="search-bar">
     <input type="text" placeholder="חפש בעיה, פתרון או מילת מפתח..." />
@@ -278,28 +355,181 @@
     <!-- Content area -->
     <main>
 
-      <!-- Problem cards section -->
-      <div class="section-title">⚡ בעיות נפוצות ופתרונות</div>
-      <div class="cards-grid" id="cards-grid">
-        <!-- Cards will be added here -->
+      <!-- ══ WINDOWS ══ -->
+      <div class="section-title">🪟 Windows</div>
+      <div class="cards-grid">
+
         <div class="card">
-          <div class="card-header">
-            <div class="card-icon">🪟</div>
-            <h3>כרטיס לדוגמה</h3>
-          </div>
-          <p>כאן תהיה תיאור קצר של הבעיה ואופן הפתרון.</p>
+          <div class="card-header"><div class="card-icon">🔑</div><h3>שדרוג ל-Windows 10/11 Pro</h3></div>
+          <p>מפתח גנרי לשדרוג ל-Pro. חשוב: לנתק אינטרנט לפני הזנת המפתח!</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>VK7JG-NPHTM-C97JM-9MPGT-3V66T</div>
           <span class="badge windows">Windows</span>
         </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">⏭️</div><h3>דילוג על אינטרנט וחשבון בהתקנת Win 11</h3></div>
+          <p>במסך ה-OOBE לחץ Shift+F10 לפתיחת CMD, ואז הרץ:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>OOBE\BYPASSNRO</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">⏭️</div><h3>Win 11 ללא חשבון Microsoft - שיטה נוספת</h3></div>
+          <p>Shift+F10 לפתיחת CMD, ואז:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>start ms-cxh:localonly</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🛡️</div><h3>הפעלת F8 Safe Mode ב-Windows 10</h3></div>
+          <p>מאפשר בחירת Safe Mode בלחיצת F8 בעת האתחול:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>BCDEDIT /SET {DEFAULT} BOOTMENUPOLICY LEGACY</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🌐</div><h3>תיקון תקלת חיפוש בשרתים</h3></div>
+          <p>אם החיפוש לא עובד בשרת, הרץ ב-PowerShell:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>Get-AppxPackage -AllUsers *MicrosoftWindows.Client.WebExperience* | Reset-AppxPackage
+Get-AppxPackage -AllUsers *MicrosoftWindows.Client.CBS* | Reset-AppxPackage
+Restart-Service WSearch</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">⌨️</div><h3>הסרת שפות מיותרות מלוח מקשים</h3></div>
+          <p>להסרת שפות כמו עברית/US שנוספו אוטומטית. PowerShell כאדמין:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>REG DELETE "HKCU\Keyboard Layout\Preload" /f</div>
+          <p style="margin-top:8px; font-size:0.82rem; color:#64748b;">אחרי הפקודה — הפעל מחדש.</p>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🖨️</div><h3>הפעלת Legacy Print Dialog</h3></div>
+          <p>פתרון לקיפאון הדפסה בChrome ועוד ב-Win 11. ב-Regedit:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>HKEY_CURRENT_USER\Software\Microsoft\Print
+→ New DWORD (32-bit): EnableLegacyPrintDialog = 1</div>
+          <p style="margin-top:8px; font-size:0.82rem; color:#64748b;">אחרי הפקודה — הפעל מחדש.</p>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🔗</div><h3>קיצור דרך לאפליקציות Microsoft Store</h3></div>
+          <p>פותח חלון עם כל האפליקציות המותקנות — גרור משם לשולחן העבודה:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>shell:appsfolder</div>
+          <span class="badge tip">טיפ</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">👤</div><h3>מי מחובר למחשב (RDP / Session)</h3></div>
+          <p>לראות את כל המשתמשים המחוברים כרגע:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>QWINSTA</div>
+          <span class="badge tip">טיפ</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🔢</div><h3>תיקון תקלת אופיס הקשורה לגופן עברי</h3></div>
+          <p>בעיות מספרים/גופנים באופיס — CMD כמנהל:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>DISM.exe /Online /Remove-Package /PackageName:Microsoft-Windows-LanguageFeatures-Fonts-Hebr-Package~31bf3856ad364e35~amd64~~10.0.26100.4202</div>
+          <span class="badge office365">Office</span>
+        </div>
+
       </div>
 
-      <!-- Tips section -->
-      <div class="section-title">💡 טיפים מהירים</div>
-      <div id="tips-list">
-        <!-- Tips will be added here -->
-        <div class="tip-box">
-          <strong>טיפ לדוגמה</strong>
-          כאן יופיע טיפ מהיר ושימושי לעבודה יומיומית.
+      <!-- ══ DRIVERS ══ -->
+      <div class="section-title">🔧 דרייברים</div>
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">💾</div><h3>גיבוי דרייברים לפני פרמוט</h3></div>
+          <p>יוצר תיקיית גיבוי בכונן C. אחר כך העבר לדיסק-און-קי:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>mkdir C:\driv
+dism /online /export-driver /destination:C:\driv</div>
+          <span class="badge windows">Windows</span>
         </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🔍</div><h3>איתור דרייברים ממערכת ישנה (SSD ישן)</h3></div>
+          <p>אם ה-SSD הישן מחובר כ-D:\ חפש כאן:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>D:\Windows\System32\DriverStore\FileRepository
+D:\Windows\System32\drivers</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+      </div>
+
+      <!-- ══ SERVERS ══ -->
+      <div class="section-title">🖥️ שרתים</div>
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🔄</div><h3>התקנת עדכונים בשרת Windows</h3></div>
+          <p>בשרתים אין Windows Update רגיל — משתמשים ב-sconfig. פתח PowerShell:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>sconfig</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🔑</div><h3>הפעלת רישיון שרת</h3></div>
+          <p>שדרוג/הפעלת רישיון Server Standard דרך DISM:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>DISM /online /Set-Edition:ServerStandard /ProductKey:YourProductKey /AcceptEula</div>
+          <span class="badge windows">Windows</span>
+        </div>
+
+      </div>
+
+      <!-- ══ OFFICE 365 ══ -->
+      <div class="section-title">📧 Office 365 & Entra</div>
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🏢</div><h3>שינוי שם לקוח ב-Entra (Azure AD)</h3></div>
+          <p>להיכנס עם אדמין ל-entra.microsoft.com ← Overview ← Properties ← Name</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>https://entra.microsoft.com</div>
+          <span class="badge office365">Office 365</span>
+        </div>
+
+      </div>
+
+      <!-- ══ ACTIVATION ══ -->
+      <div class="section-title">✅ הפעלת מוצרים</div>
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">✅</div><h3>הפעלת Windows / Office דרך aka.ms</h3></div>
+          <p>הפעלה קלה של Windows 10/11 ואופיס. מספיק להזין מייל של gov.il (או דומה) ואז להכניס את מספרי ההפעלה:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>https://aka.ms/aoh</div>
+          <span class="badge tip">טיפ</span>
+        </div>
+
+      </div>
+
+      <!-- ══ TOOLS ══ -->
+      <div class="section-title">🛠️ כלים שימושיים</div>
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">⚙️</div><h3>PS2EXE — המרת PowerShell ל-EXE</h3></div>
+          <p>מאפשר להפוך סקריפט PS1 לקובץ EXE. התקנה ב-PowerShell:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>Install-Module ps2exe -Scope CurrentUser
+Invoke-ps2exe script.ps1 script.exe</div>
+          <span class="badge tip">כלי</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">👤</div><h3>Forensit — העברת פרופיל משתמש</h3></div>
+          <p>תוכנה להעברת פרופיל Windows ממחשב למחשב או אחרי הצטרפות לדומיין:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>https://www.forensit.com/domain-migration.html</div>
+          <span class="badge tip">כלי</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🖨️</div><h3>הסרת מדפסות מרובות במהירות</h3></div>
+          <p>פותח חלון GUI לבחירת מדפסות (Ctrl לריבוי) ומוחק ביחד. PowerShell כאדמין:</p>
+          <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">העתק</button>get-printer | Out-GridView -PassThru | Remove-Printer</div>
+          <span class="badge tip">טיפ</span>
+        </div>
+
       </div>
 
     </main>
@@ -309,5 +539,50 @@
     Israel IT Support · 1007.co.il · כל הזכויות שמורות
   </footer>
 
+  <script>
+    // Copy to clipboard
+    function copyCode(btn) {
+      const code = btn.parentElement.innerText.replace('העתק', '').trim();
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = '✓ הועתק';
+        setTimeout(() => btn.textContent = 'העתק', 1500);
+      });
+    }
+
+    // Live search
+    document.querySelector('.search-bar input').addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(q) ? '' : 'none';
+      });
+      // Show/hide section titles based on visible cards
+      document.querySelectorAll('.section-title').forEach(title => {
+        const grid = title.nextElementSibling;
+        if (!grid) return;
+        const anyVisible = [...grid.querySelectorAll('.card')].some(c => c.style.display !== 'none');
+        title.style.display = anyVisible || q === '' ? '' : 'none';
+        grid.style.display = anyVisible || q === '' ? '' : 'none';
+      });
+    });
+
+    // Category filter
+    document.querySelectorAll('.category-list a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.category-list a').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const cat = this.textContent.trim();
+        if (cat.includes('הכל')) {
+          document.querySelectorAll('.card, .section-title, .cards-grid').forEach(el => el.style.display = '');
+          return;
+        }
+        const map = { 'Windows': 'windows', 'רשת': 'network', 'Office': 'office365', 'אבטחה': 'security', 'חומרה': 'hardware', 'טיפים': 'tip' };
+        const key = Object.keys(map).find(k => cat.includes(k));
+        document.querySelectorAll('.card').forEach(card => {
+          card.style.display = (!key || card.querySelector('.badge')?.classList.contains(map[key])) ? '' : 'none';
+        });
+      });
+    });
+  </script>
 </body>
 </html>
