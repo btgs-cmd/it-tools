@@ -111,6 +111,13 @@
       </div>
 
       <div class="category">
+        <div class="category-title">דיסק</div>
+        <button class="item-button" data-name="ניקוי דיסק" onclick="showScript('diskClean', this)">
+          <span class="item-icon">&#129529;</span><span class="item-label">ניקוי דיסק</span>
+        </button>
+      </div>
+
+      <div class="category">
         <div class="category-title">Office 365</div>
         <button class="item-button" data-name="מכסת תיבות דואר" onclick="showScript('mailboxQuota', this)">
           <span class="item-icon">&#128140;</span><span class="item-label">מכסת תיבות דואר</span>
@@ -123,7 +130,7 @@
   <main id="main">
     <h1>סקריפטים PowerShell</h1>
     <div id="scriptDesc">בחר סקריפט מהתפריט...</div>
-    <textarea id="scriptDisplay" readonly placeholder="בחר סקריפט מהתפריט משמאל..."></textarea>
+    <textarea id="scriptDisplay" readonly dir="ltr" placeholder="בחר סקריפט מהתפריט משמאל..."></textarea>
     <button id="copyBtn" onclick="copyScript()">📋 העתק סקריפט</button>
   </main>
 </div>
@@ -153,12 +160,17 @@ var scripts = {
 
   stressGui: {
     desc: "ממשק גרפי לבדיקת עומס מעבד עם מדידת טמפרטורה בזמן אמת (הרץ כאדמין)",
-    code: "Add-Type -AssemblyName PresentationFramework\nAdd-Type -AssemblyName System.Windows.Forms\n\n$tempMonitorPath = \"$env:USERPROFILE\\AppData\\Local\\TempMonitor\"\n$libPath = \"$tempMonitorPath\\LibreHardwareMonitorLib.dll\"\n\nif (-not (Test-Path $libPath)) {\n    [System.Windows.MessageBox]::Show(\"Downloading temperature library...`nThis will take a moment.\",\"First Run Setup\",\"OK\",\"Information\")\n    New-Item -ItemType Directory -Path $tempMonitorPath -Force | Out-Null\n    $url = \"https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases/download/v0.9.3/LibreHardwareMonitor-net472.zip\"\n    $zipPath = \"$tempMonitorPath\\lhm.zip\"\n    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\n    Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing\n    Expand-Archive -Path $zipPath -DestinationPath $tempMonitorPath -Force\n    Remove-Item $zipPath -Force\n}\n\nAdd-Type -Path $libPath\n$computer = New-Object LibreHardwareMonitor.Hardware.Computer\n$computer.IsCpuEnabled = $true\n$computer.Open()\n\n# הסקריפט המלא כולל XAML GUI נמצא בקובץ stressGui.ps1\n# הרץ את הקובץ ישירות עם PowerShell כאדמין לקבלת הממשק הגרפי המלא\n\nWrite-Host \"Current CPU Temperatures:\" -ForegroundColor Cyan\nforeach ($hw in $computer.Hardware) {\n    $hw.Update()\n    foreach ($s in $hw.Sensors) {\n        if ($s.SensorType -eq [LibreHardwareMonitor.Hardware.SensorType]::Temperature) {\n            Write-Host \"  $($s.Name): $([math]::Round($s.Value,1))C\" -ForegroundColor Yellow\n        }\n    }\n}\n$computer.Close()"
+    code: "Add-Type -AssemblyName PresentationFramework\nAdd-Type -AssemblyName System.Windows.Forms\n\n$tempMonitorPath = \"$env:USERPROFILE\\AppData\\Local\\TempMonitor\"\n$libPath = \"$tempMonitorPath\\LibreHardwareMonitorLib.dll\"\n\nif (-not (Test-Path $libPath)) {\n    [System.Windows.MessageBox]::Show(\"Downloading temperature library...`nThis will take a moment.\",\"First Run Setup\",\"OK\",\"Information\")\n    New-Item -ItemType Directory -Path $tempMonitorPath -Force | Out-Null\n    $url = \"https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases/download/v0.9.3/LibreHardwareMonitor-net472.zip\"\n    $zipPath = \"$tempMonitorPath\\lhm.zip\"\n    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\n    Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing\n    Expand-Archive -Path $zipPath -DestinationPath $tempMonitorPath -Force\n    Remove-Item $zipPath -Force\n}\n\nAdd-Type -Path $libPath\n$computer = New-Object LibreHardwareMonitor.Hardware.Computer\n$computer.IsCpuEnabled = $true\n$computer.Open()\n\nWrite-Host \"Current CPU Temperatures:\" -ForegroundColor Cyan\nforeach ($hw in $computer.Hardware) {\n    $hw.Update()\n    foreach ($s in $hw.Sensors) {\n        if ($s.SensorType -eq [LibreHardwareMonitor.Hardware.SensorType]::Temperature) {\n            Write-Host \"  $($s.Name): $([math]::Round($s.Value,1))C\" -ForegroundColor Yellow\n        }\n    }\n}\n$computer.Close()"
   },
 
   deleteTemp: {
     desc: "מוחק קבצים זמניים של המשתמש ושל המערכת לפינוי מקום",
     code: "@echo off\necho Deleting temp files...\n\n:: Delete user temp files\ndel /s /q \"%USERPROFILE%\\AppData\\Local\\Temp\\*\"\nrmdir /s /q \"%USERPROFILE%\\AppData\\Local\\Temp\"\nmkdir \"%USERPROFILE%\\AppData\\Local\\Temp\"\n\n:: Delete system temp files\ndel /s /q \"C:\\Windows\\Temp\\*\"\nrmdir /s /q \"C:\\Windows\\Temp\"\nmkdir \"C:\\Windows\\Temp\"\n\necho Done! Temp files deleted.\npause"
+  },
+
+  diskClean: {
+    desc: "ניקוי דיסק — הרץ את הפקודות לפי הסדר: קודם בדוק, אחר כך נקה, אחר כך בדוק מקום פנוי",
+    code: ":: ================================================\n:: 1. TEST - כמה מקום ניתן לפנות (ללא מחיקה)\n:: ================================================\npowershell -command \"$paths=@('C:\\Windows\\Temp\\*','C:\\Windows\\SoftwareDistribution\\Download\\*'); Get-ChildItem 'C:\\Users' -Directory -EA SilentlyContinue | ForEach-Object { $paths += $_.FullName+'\\AppData\\Local\\Temp\\*' }; foreach($p in $paths){ $s=(Get-ChildItem $p -Recurse -Force -EA SilentlyContinue | Measure-Object Length -Sum).Sum; if($s -gt 0){Write-Host $p '->' ([math]::Round($s/1GB,2)) 'GB'} }\"\n\n\n:: ================================================\n:: 2. CLEANUP - מחיקה בפועל + כמה פונה\n:: ================================================\npowershell -command \"$before=(Get-PSDrive C).Free; $paths=@('C:\\Windows\\Temp\\*','C:\\Windows\\SoftwareDistribution\\Download\\*'); Get-ChildItem 'C:\\Users' -Directory -EA SilentlyContinue | ForEach-Object { $paths += $_.FullName+'\\AppData\\Local\\Temp\\*' }; foreach($p in $paths){Remove-Item $p -Recurse -Force -EA SilentlyContinue}; $after=(Get-PSDrive C).Free; Write-Host ('Freed: ' + [math]::Round(($after-$before)/1GB,2) + ' GB')\"\n\n\n:: ================================================\n:: 3. FREE SPACE - כמה מקום פנוי עכשיו\n:: ================================================\nfsutil volume diskfree C:"
   },
 
   mailboxQuota: {
