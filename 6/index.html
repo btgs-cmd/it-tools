@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Disk Health - SMART</title>
+<style>
+  * { box-sizing: border-box; }
+  body, html {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh; overflow: hidden;
+    background: #121212; color: #e1e1e1;
+  }
+  #app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+  #sidebar {
+    background: #0078D7; width: 280px; color: white; display: flex; flex-direction: column;
+    padding: 25px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); transition: width 0.3s ease;
+    overflow: hidden; flex-shrink: 0;
+  }
+  #sidebar.collapsed { width: 70px; }
+  #sidebar header { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; white-space: nowrap; overflow: hidden; }
+  #toggleSidebarBtn {
+    background: transparent; border: none; color: white; font-size: 1.8rem;
+    cursor: pointer; margin-bottom: 20px; align-self: flex-start; transition: transform 0.3s ease;
+  }
+  #sidebar.collapsed #toggleSidebarBtn { transform: rotate(180deg); }
+  #sidebar.collapsed header,
+  #sidebar.collapsed .category-title,
+  #sidebar.collapsed .item-label { display: none; }
+  #categories { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; }
+  #categories::-webkit-scrollbar { width: 6px; }
+  #categories::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+  .category-title {
+    font-weight: 700; margin: 15px 0 8px 0; font-size: 1rem;
+    border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 5px;
+  }
+  .item-button {
+    width: 100%; background: rgba(255,255,255,0.15); border: none; color: white;
+    padding: 10px 14px; margin-bottom: 10px; border-radius: 8px; text-align: left;
+    font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3); transition: all 0.2s ease;
+  }
+  .item-button:hover { background: rgba(255,255,255,0.3); }
+  .item-button.active { background: rgba(255,255,255,0.45); box-shadow: 0 0 0 2px white; }
+  .item-icon { flex-shrink: 0; font-size: 1.3rem; }
+  #main {
+    flex-grow: 1; padding: 30px 40px; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  #main h1 { font-weight: 800; font-size: 2.2rem; margin: 0 0 6px 0; color: #0097e6; }
+  #scriptDesc { color: #888; font-size: 0.95rem; margin-bottom: 16px; min-height: 20px; }
+  #scriptDisplay {
+    flex-grow: 1; background-color: #1e1e1e; border-radius: 12px; padding: 20px;
+    font-family: 'Consolas', monospace; font-size: 13px; color: #c7d1e0;
+    white-space: pre-wrap; overflow-y: auto;
+    box-shadow: inset 0 0 18px rgba(0, 151, 230, 0.5);
+    border: 1px solid #333; resize: vertical; min-height: 300px;
+    direction: ltr; text-align: left;
+  }
+  #copyBtn {
+    margin-top: 12px; align-self: flex-start;
+    background: linear-gradient(90deg, #0097e6, #00c1ff);
+    border: none; border-radius: 8px; padding: 10px 24px;
+    font-weight: 700; font-size: 1rem; color: white; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,193,255,0.4); transition: all 0.2s ease;
+  }
+  #copyBtn:hover { background: linear-gradient(90deg, #0072bb, #0096e6); }
+</style>
+</head>
+<body>
+<div id="app">
+  <nav id="sidebar">
+    <header>DISK HEALTH</header>
+    <button id="toggleSidebarBtn">&#9776;</button>
+    <div id="categories">
+
+      <div class="category">
+        <div class="category-title">S.M.A.R.T</div>
+        <button class="item-button" onclick="showScript('diskHealth', this)">
+          <span class="item-icon">&#128190;</span><span class="item-label">Disk Health Check</span>
+        </button>
+        <button class="item-button" onclick="showScript('diskHealthFull', this)">
+          <span class="item-icon">&#128202;</span><span class="item-label">Full SMART Report</span>
+        </button>
+        <button class="item-button" onclick="showScript('diskHealthClean', this)">
+          <span class="item-icon">&#129529;</span><span class="item-label">Check + Cleanup</span>
+        </button>
+      </div>
+
+    </div>
+  </nav>
+
+  <main id="main">
+    <h1>Disk Health - SMART</h1>
+    <div id="scriptDesc">Select a command from the menu...</div>
+    <textarea id="scriptDisplay" readonly placeholder="Select a command from the left menu..."></textarea>
+    <button id="copyBtn" onclick="copyScript()">📋 Copy Command</button>
+  </main>
+</div>
+
+<script>
+var BASE_URL = 'https://1007.co.il/6/smartctl.exe';
+var SMARTCTL = 'C:\\Windows\\Temp\\smartctl.exe';
+
+var scripts = {
+
+  diskHealth: {
+    desc: "Downloads smartctl, runs a SMART health check on all disks, then deletes the exe. Client sees nothing.",
+    code:
+`powershell -command "
+Invoke-WebRequest -Uri '${BASE_URL}' -OutFile '${SMARTCTL}' -UseBasicParsing;
+$disks = & '${SMARTCTL}' --scan;
+foreach($line in $disks){
+    $dev = ($line -split ' ')[0];
+    Write-Host '========================================' -ForegroundColor Cyan;
+    Write-Host 'Disk: ' $dev -ForegroundColor Yellow;
+    Write-Host '========================================' -ForegroundColor Cyan;
+    & '${SMARTCTL}' -H $dev
+};
+Remove-Item '${SMARTCTL}' -Force"`.replace(/\n/g, ' ').replace(/\s+/g, ' ')
+  },
+
+  diskHealthFull: {
+    desc: "Full SMART report — shows health status, temperature, power-on hours, reallocated sectors, pending sectors and uncorrectable errors for all disks.",
+    code:
+`powershell -command "
+Invoke-WebRequest -Uri '${BASE_URL}' -OutFile '${SMARTCTL}' -UseBasicParsing;
+$disks = & '${SMARTCTL}' --scan;
+foreach($line in $disks){
+    $dev = ($line -split ' ')[0];
+    Write-Host '';
+    Write-Host '========================================' -ForegroundColor Cyan;
+    Write-Host 'Disk: ' $dev -ForegroundColor Yellow;
+    Write-Host '========================================' -ForegroundColor Cyan;
+    $output = & '${SMARTCTL}' -H -A $dev;
+    $output | Where-Object {
+        $_ -match 'SMART overall' -or
+        $_ -match 'Reallocated_Sector' -or
+        $_ -match 'Current_Pending_Sector' -or
+        $_ -match 'Offline_Uncorrectable' -or
+        $_ -match 'Temperature_Celsius' -or
+        $_ -match 'Power_On_Hours' -or
+        $_ -match 'Start_Stop_Count' -or
+        $_ -match 'SMART Health'
+    }
+};
+Remove-Item '${SMARTCTL}' -Force"`.replace(/\n/g, ' ').replace(/\s+/g, ' ')
+  },
+
+  diskHealthClean: {
+    desc: "Run these commands in order: 1) Check disk health, 2) Check how much can be cleaned, 3) Clean temp files",
+    code:
+`:: ================================================
+:: 1. DISK HEALTH - SMART check on all disks
+:: ================================================
+powershell -command "Invoke-WebRequest -Uri '${BASE_URL}' -OutFile '${SMARTCTL}' -UseBasicParsing; $disks = & '${SMARTCTL}' --scan; foreach($line in $disks){ $dev=($line -split ' ')[0]; Write-Host '==== ' $dev ' ====' -ForegroundColor Cyan; & '${SMARTCTL}' -H -A $dev | Where-Object { $_ -match 'SMART overall|Reallocated_Sector|Pending_Sector|Uncorrectable|Temperature|Power_On_Hours' } }; Remove-Item '${SMARTCTL}' -Force"
+
+
+:: ================================================
+:: 2. DISK CLEANUP PREVIEW - see what can be freed
+:: ================================================
+powershell -command "$paths=@('C:\\Windows\\Temp\\*','C:\\Windows\\SoftwareDistribution\\Download\\*'); Get-ChildItem 'C:\\Users' -Directory -EA SilentlyContinue | ForEach-Object { $paths += $_.FullName+'\\AppData\\Local\\Temp\\*' }; foreach($p in $paths){ $s=(Get-ChildItem $p -Recurse -Force -EA SilentlyContinue | Measure-Object Length -Sum).Sum; if($s -gt 0){Write-Host $p '->' ([math]::Round($s/1GB,2)) 'GB'} }"
+
+
+:: ================================================
+:: 3. DISK CLEANUP - clean and report freed space
+:: ================================================
+powershell -command "$before=(Get-PSDrive C).Free; $paths=@('C:\\Windows\\Temp\\*','C:\\Windows\\SoftwareDistribution\\Download\\*'); Get-ChildItem 'C:\\Users' -Directory -EA SilentlyContinue | ForEach-Object { $paths += $_.FullName+'\\AppData\\Local\\Temp\\*' }; foreach($p in $paths){Remove-Item $p -Recurse -Force -EA SilentlyContinue}; $after=(Get-PSDrive C).Free; Write-Host ('Freed: ' + [math]::Round(($after-$before)/1GB,2) + ' GB')"`
+  }
+
+};
+
+document.getElementById('toggleSidebarBtn').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+function showScript(key, btn) {
+  var s = scripts[key];
+  if (!s) return;
+  document.getElementById('scriptDisplay').value = s.code;
+  document.getElementById('scriptDesc').textContent = s.desc;
+  document.querySelectorAll('.item-button').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function copyScript() {
+  var text = document.getElementById('scriptDisplay').value;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(function() { btn.textContent = '📋 Copy Command'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
