@@ -115,6 +115,9 @@
         <button class="item-button" data-name="ניקוי דיסק" onclick="showScript('diskClean', this)">
           <span class="item-icon">&#129529;</span><span class="item-label">ניקוי דיסק</span>
         </button>
+        <button class="item-button" data-name="like crystal disk info but in ps" onclick="showScript('diskHealth', this)">
+          <span class="item-icon">&#128190;</span><span class="item-label">like crystal disk info but in ps</span>
+        </button>
       </div>
 
       <div class="category">
@@ -166,6 +169,11 @@ var scripts = {
   deleteTemp: {
     desc: "מוחק קבצים זמניים של המשתמש ושל המערכת לפינוי מקום",
     code: "@echo off\necho Deleting temp files...\n\n:: Delete user temp files\ndel /s /q \"%USERPROFILE%\\AppData\\Local\\Temp\\*\"\nrmdir /s /q \"%USERPROFILE%\\AppData\\Local\\Temp\"\nmkdir \"%USERPROFILE%\\AppData\\Local\\Temp\"\n\n:: Delete system temp files\ndel /s /q \"C:\\Windows\\Temp\\*\"\nrmdir /s /q \"C:\\Windows\\Temp\"\nmkdir \"C:\\Windows\\Temp\"\n\necho Done! Temp files deleted.\npause"
+  },
+
+  diskHealth: {
+    desc: "Downloads smartctl silently, scans all disks and shows key SMART data — health, wear, temperature, errors, power-on hours. Then deletes itself.",
+    code: "powershell -command \"Invoke-WebRequest -Uri 'https://1007.co.il/6/smartctl.exe' -OutFile 'C:\\Windows\\Temp\\smartctl.exe' -UseBasicParsing; $disks = & 'C:\\Windows\\Temp\\smartctl.exe' --scan; foreach($line in $disks){ $dev=($line -split ' ')[0]; Write-Host '====' $dev '====' -ForegroundColor Cyan; & 'C:\\Windows\\Temp\\smartctl.exe' -a $dev | Where-Object { $_ -match 'SMART overall|Percentage Used|Available Spare:|Power On Hours|Unsafe Shutdown|Error Information Log|Temperature:|Temp Sensor|Critical Warning' } }; Remove-Item 'C:\\Windows\\Temp\\smartctl.exe' -Force\""
   },
 
   diskClean: {
