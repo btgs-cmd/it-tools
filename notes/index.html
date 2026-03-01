@@ -2,13 +2,23 @@
 <html lang="he">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>My Notes</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --green: #075e54;
+    --green-light: #128c7e;
+    --cat-general: #fff;
+    --cat-work: #e3f2fd;
+    --cat-personal: #fce4ec;
+    --cat-todo: #f3e5f5;
+    --cat-urgent: #fff3e0;
+  }
+
   body {
-    background: #f0f2f5;
+    background: #e5ddd5;
     font-family: 'Segoe UI', Arial, sans-serif;
     height: 100vh;
     display: flex;
@@ -18,35 +28,126 @@
 
   /* TOP BAR */
   .topbar {
-    background: #075e54;
+    background: var(--green);
     color: #fff;
-    padding: 12px 20px;
+    padding: 10px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    gap: 10px;
   }
-  .topbar .title { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; }
-  .topbar .clock { font-size: 0.82rem; opacity: 0.85; }
-  .topbar .save-status { font-size: 0.75rem; opacity: 0.8; }
+  .topbar .title { font-size: 1.05rem; font-weight: 600; white-space: nowrap; }
+  .topbar .clock { font-size: 0.78rem; opacity: 0.85; white-space: nowrap; }
+  .topbar .save-dot { width: 8px; height: 8px; border-radius: 50%; background: #a5d6a7; flex-shrink: 0; }
+  .topbar .save-dot.saving { background: #ffd54f; }
+  .topbar .save-dot.err { background: #ef9a9a; }
 
-  /* MESSAGES AREA */
+  /* SEARCH BAR */
+  .searchbar {
+    background: #f0f2f5;
+    padding: 8px 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .searchbar input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 0.9rem;
+    outline: none;
+    background: #fff;
+    transition: border 0.2s;
+  }
+  .searchbar input:focus { border-color: var(--green); }
+
+  /* CATEGORY FILTER */
+  .cat-filter {
+    background: #f0f2f5;
+    padding: 6px 12px;
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    border-bottom: 1px solid #ddd;
+    scrollbar-width: none;
+  }
+  .cat-filter::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    border: none;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    opacity: 0.6;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .cat-pill.active { opacity: 1; transform: scale(1.05); }
+  .cat-pill.all    { background: var(--green); color: #fff; }
+  .cat-pill.work   { background: #1976d2; color: #fff; }
+  .cat-pill.personal { background: #e91e63; color: #fff; }
+  .cat-pill.todo   { background: #7b1fa2; color: #fff; }
+  .cat-pill.urgent { background: #e65100; color: #fff; }
+
+  /* PINNED SECTION */
+  .pinned-section {
+    background: #fffde7;
+    border-bottom: 2px solid #ffe082;
+    padding: 6px 12px;
+    flex-shrink: 0;
+    display: none;
+  }
+  .pinned-section.visible { display: block; }
+  .pinned-label { font-size: 0.72rem; color: #f57f17; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+  .pinned-item {
+    background: #fff9c4;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .pinned-item .pin-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pinned-item button { background: none; border: none; cursor: pointer; color: #aaa; font-size: 0.8rem; }
+  .pinned-item button:hover { color: #e53935; }
+
+  /* FEED */
   #feed {
     flex: 1;
     overflow-y: auto;
-    padding: 16px 12px;
+    padding: 12px 10px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
 
-  .empty-hint {
+  /* DATE SEPARATOR */
+  .date-sep {
     text-align: center;
-    color: #aaa;
-    margin-top: 60px;
-    font-size: 0.95rem;
+    margin: 10px 0 6px;
   }
+  .date-sep span {
+    background: rgba(255,255,255,0.75);
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #555;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .empty-hint { text-align: center; color: #999; margin-top: 60px; font-size: 0.95rem; }
+  .no-results { text-align: center; color: #aaa; margin-top: 40px; font-size: 0.9rem; }
 
   /* MESSAGE BUBBLE */
   .msg-wrap {
@@ -55,168 +156,160 @@
     align-items: flex-end;
     position: relative;
   }
-  .msg-wrap.rtl-msg { align-items: flex-end; }
   .msg-wrap.ltr-msg { align-items: flex-start; }
 
   .bubble {
-    background: #fff;
+    background: var(--cat-general);
     border-radius: 12px 12px 2px 12px;
-    padding: 8px 12px 22px 12px;
-    max-width: 80%;
-    min-width: 120px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 7px 10px 22px 10px;
+    max-width: 82%;
+    min-width: 100px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
     position: relative;
     word-break: break-word;
+    transition: box-shadow 0.2s;
   }
-  .msg-wrap.ltr-msg .bubble {
-    border-radius: 12px 12px 12px 2px;
-    background: #dcf8c6;
-  }
+  .msg-wrap.ltr-msg .bubble { border-radius: 12px 12px 12px 2px; }
 
-  .bubble .msg-text {
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #222;
-    white-space: pre-wrap;
+  .bubble.cat-work     { background: var(--cat-work); }
+  .bubble.cat-personal { background: var(--cat-personal); }
+  .bubble.cat-todo     { background: var(--cat-todo); }
+  .bubble.cat-urgent   { background: var(--cat-urgent); }
+
+  .bubble .cat-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    letter-spacing: 0.4px;
   }
+  .cat-badge.work     { background: #1976d2; color: #fff; }
+  .cat-badge.personal { background: #e91e63; color: #fff; }
+  .cat-badge.todo     { background: #7b1fa2; color: #fff; }
+  .cat-badge.urgent   { background: #e65100; color: #fff; }
+
+  .bubble .msg-text { font-size: 0.98rem; line-height: 1.5; color: #222; white-space: pre-wrap; }
   .bubble .msg-text.rtl { direction: rtl; text-align: right; }
   .bubble .msg-text.ltr { direction: ltr; text-align: left; }
 
   .bubble .msg-time {
-    position: absolute;
-    bottom: 5px;
-    right: 10px;
-    font-size: 0.68rem;
-    color: #999;
+    position: absolute; bottom: 4px; right: 9px;
+    font-size: 0.67rem; color: #999;
+    display: flex; align-items: center; gap: 3px;
   }
+  .pin-indicator { font-size: 0.65rem; }
 
   /* REPLY PREVIEW inside bubble */
   .reply-preview {
-    background: #f0f0f0;
-    border-left: 3px solid #075e54;
+    background: rgba(0,0,0,0.06);
+    border-left: 3px solid var(--green);
     border-radius: 6px;
-    padding: 4px 8px;
-    margin-bottom: 6px;
-    font-size: 0.8rem;
+    padding: 3px 8px;
+    margin-bottom: 5px;
+    font-size: 0.78rem;
     color: #555;
-    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  /* ACTION BUTTONS - appear on hover */
+  /* ACTIONS */
   .msg-actions {
     display: none;
     gap: 4px;
-    margin-bottom: 4px;
-    flex-direction: row;
+    margin-bottom: 3px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
+  .msg-wrap.ltr-msg .msg-actions { justify-content: flex-start; }
   .msg-wrap:hover .msg-actions { display: flex; }
 
   .msg-actions button {
     background: #fff;
     border: 1px solid #ddd;
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 0.75rem;
+    border-radius: 16px;
+    padding: 3px 9px;
+    font-size: 0.72rem;
     cursor: pointer;
     color: #555;
     transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
   }
-  .msg-actions button:hover { background: #075e54; color: #fff; border-color: #075e54; }
+  .msg-actions button:hover { background: var(--green); color: #fff; border-color: var(--green); }
   .msg-actions .del-btn:hover { background: #e53935; border-color: #e53935; }
+  .msg-actions .pin-btn:hover { background: #f57f17; border-color: #f57f17; }
 
-  /* EDIT MODE */
+  /* EDIT */
   .bubble textarea.edit-area {
-    width: 100%;
-    background: #fffde7;
-    border: 1px solid #075e54;
-    border-radius: 6px;
-    padding: 4px 6px;
-    font-size: 1rem;
-    font-family: inherit;
-    resize: none;
-    outline: none;
-    min-height: 40px;
+    width: 100%; background: #fffde7; border: 1px solid var(--green);
+    border-radius: 6px; padding: 4px 6px; font-size: 0.95rem;
+    font-family: inherit; resize: none; outline: none; min-height: 36px;
   }
-  .edit-actions { display: flex; gap: 6px; margin-top: 6px; }
-  .edit-actions button {
-    padding: 4px 14px;
-    border-radius: 20px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-  .save-edit { background: #075e54; color: #fff; }
+  .edit-actions { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+  .edit-actions button { padding: 4px 12px; border-radius: 16px; border: none; cursor: pointer; font-size: 0.78rem; font-weight: 600; }
+  .save-edit { background: var(--green); color: #fff; }
   .cancel-edit { background: #eee; color: #555; }
+
+  /* CAT SELECTOR in edit */
+  .cat-select { border: 1px solid #ddd; border-radius: 16px; padding: 4px 8px; font-size: 0.78rem; outline: none; background: #fff; }
 
   /* REPLY BAR */
   #replyBar {
-    display: none;
-    background: #e8f5e9;
-    border-top: 1px solid #c8e6c9;
-    padding: 6px 16px;
-    font-size: 0.82rem;
-    color: #555;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: space-between;
+    display: none; background: #e8f5e9; border-top: 1px solid #c8e6c9;
+    padding: 6px 14px; font-size: 0.82rem; color: #555;
+    flex-shrink: 0; align-items: center; justify-content: space-between;
   }
-  #replyBar span { color: #075e54; font-weight: 600; }
+  #replyBar span { color: var(--green); font-weight: 600; }
   #replyBar button { background: none; border: none; cursor: pointer; color: #888; font-size: 1rem; }
 
-  /* INPUT AREA */
+  /* INPUT */
   .input-area {
-    background: #fff;
+    background: #f0f2f5;
     border-top: 1px solid #ddd;
-    padding: 10px 12px;
+    padding: 8px 10px;
     display: flex;
     gap: 8px;
     align-items: flex-end;
     flex-shrink: 0;
   }
-  #msgInput {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 22px;
-    padding: 10px 16px;
-    font-size: 1rem;
-    font-family: inherit;
-    outline: none;
-    resize: none;
-    max-height: 120px;
-    overflow-y: auto;
-    background: #f8f8f8;
-    transition: border 0.2s;
-    line-height: 1.4;
-  }
-  #msgInput:focus { border-color: #075e54; background: #fff; }
-  #sendBtn {
-    background: #075e54;
-    border: none;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    color: #fff;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.2s;
-  }
-  #sendBtn:hover { background: #128c7e; }
+  .input-left { display: flex; flex-direction: column; gap: 5px; flex: 1; }
 
-  /* Scrollbar */
-  #feed::-webkit-scrollbar { width: 5px; }
+  .cat-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .cat-btn {
+    border: none; border-radius: 14px; padding: 3px 10px;
+    font-size: 0.72rem; cursor: pointer; opacity: 0.55;
+    font-weight: 600; transition: opacity 0.15s, transform 0.1s;
+  }
+  .cat-btn.active { opacity: 1; transform: scale(1.08); }
+  .cat-btn.general  { background: #e0e0e0; color: #333; }
+  .cat-btn.work     { background: #1976d2; color: #fff; }
+  .cat-btn.personal { background: #e91e63; color: #fff; }
+  .cat-btn.todo     { background: #7b1fa2; color: #fff; }
+  .cat-btn.urgent   { background: #e65100; color: #fff; }
+
+  #msgInput {
+    flex: 1; border: 1px solid #ddd; border-radius: 20px;
+    padding: 9px 14px; font-size: 0.97rem; font-family: inherit;
+    outline: none; resize: none; max-height: 100px; overflow-y: auto;
+    background: #fff; transition: border 0.2s; line-height: 1.4;
+  }
+  #msgInput:focus { border-color: var(--green); }
+
+  #sendBtn {
+    background: var(--green); border: none; border-radius: 50%;
+    width: 42px; height: 42px; color: #fff; font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.2s;
+  }
+  #sendBtn:hover { background: var(--green-light); }
+
+  #feed::-webkit-scrollbar { width: 4px; }
   #feed::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+  /* highlight search */
+  mark { background: #fff176; border-radius: 2px; }
 </style>
 </head>
 <body>
@@ -224,7 +317,24 @@
 <div class="topbar">
   <span class="title">📝 My Notes</span>
   <span class="clock" id="clock"></span>
-  <span class="save-status" id="status">●</span>
+  <div class="save-dot" id="saveDot" title="Auto-save on"></div>
+</div>
+
+<div class="searchbar">
+  <input type="text" id="searchInput" placeholder="🔍 Search notes..." oninput="renderFeed()">
+</div>
+
+<div class="cat-filter">
+  <button class="cat-pill all active" onclick="setFilter('all',this)">All</button>
+  <button class="cat-pill work" onclick="setFilter('work',this)">💼 Work</button>
+  <button class="cat-pill personal" onclick="setFilter('personal',this)">👤 Personal</button>
+  <button class="cat-pill todo" onclick="setFilter('todo',this)">✅ Todo</button>
+  <button class="cat-pill urgent" onclick="setFilter('urgent',this)">🔥 Urgent</button>
+</div>
+
+<div class="pinned-section" id="pinnedSection">
+  <div class="pinned-label">📌 PINNED</div>
+  <div id="pinnedList"></div>
 </div>
 
 <div id="feed"></div>
@@ -235,8 +345,19 @@
 </div>
 
 <div class="input-area">
-  <textarea id="msgInput" placeholder="Write a note..." rows="1"></textarea>
-  <button id="sendBtn" onclick="sendMessage()">➤</button>
+  <div class="input-left">
+    <div class="cat-row">
+      <button class="cat-btn general active" onclick="selectCat('general',this)">General</button>
+      <button class="cat-btn work" onclick="selectCat('work',this)">💼 Work</button>
+      <button class="cat-btn personal" onclick="selectCat('personal',this)">👤 Personal</button>
+      <button class="cat-btn todo" onclick="selectCat('todo',this)">✅ Todo</button>
+      <button class="cat-btn urgent" onclick="selectCat('urgent',this)">🔥 Urgent</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <textarea id="msgInput" placeholder="Write a note..." rows="1"></textarea>
+      <button id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -245,53 +366,119 @@ function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
     now.toLocaleDateString('he-IL') + ' ' +
-    now.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+    now.toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'});
 }
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(updateClock, 1000); updateClock();
 
-// ── RTL detection ────────────────────────────────────────────
-function detectDir(text) {
-  return /[\u0590-\u05FF]/.test(text) ? 'rtl' : 'ltr';
-}
-
+// ── Helpers ──────────────────────────────────────────────────
+function detectDir(t) { return /[\u0590-\u05FF]/.test(t) ? 'rtl' : 'ltr'; }
 function getStamp() {
-  const now = new Date();
-  return now.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+  const n = new Date();
+  return n.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+}
+function getDateStr(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
+}
+function isSameDay(a, b) {
+  const da = new Date(a), db = new Date(b);
+  return da.toDateString() === db.toDateString();
+}
+function highlight(text, q) {
+  if (!q) return escHtml(text);
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return escHtml(text).replace(re, '<mark>$1</mark>');
+}
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ── State ────────────────────────────────────────────────────
 let notes = [];
-let replyTo = null; // {id, text}
+let replyTo = null;
+let activeFilter = 'all';
+let activeCat = 'general';
+
+// ── Category selection ───────────────────────────────────────
+function selectCat(cat, btn) {
+  activeCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeed();
+}
 
 // ── Render ───────────────────────────────────────────────────
 function renderFeed() {
   const feed = document.getElementById('feed');
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
   feed.innerHTML = '';
+
+  // Pinned
+  renderPinned();
+
+  let visible = notes.filter(n => {
+    const matchCat = activeFilter === 'all' || n.cat === activeFilter;
+    const matchQ = !q || n.text.toLowerCase().includes(q);
+    return matchCat && matchQ && !n.pinned;
+  });
 
   if (notes.length === 0) {
     feed.innerHTML = '<div class="empty-hint">No notes yet. Start typing below 👇</div>';
     return;
   }
+  if (visible.length === 0) {
+    feed.innerHTML = '<div class="no-results">No results found.</div>';
+    return;
+  }
 
-  notes.forEach((note, i) => {
+  let lastDate = null;
+  visible.forEach((note, vi) => {
+    const i = notes.indexOf(note);
     const dir = detectDir(note.text);
+    const dateStr = getDateStr(note.iso);
+
+    // Date separator
+    if (dateStr && (!lastDate || lastDate !== dateStr)) {
+      const sep = document.createElement('div');
+      sep.className = 'date-sep';
+      sep.innerHTML = `<span>${dateStr}</span>`;
+      feed.appendChild(sep);
+      lastDate = dateStr;
+    }
+
     const wrap = document.createElement('div');
     wrap.className = `msg-wrap ${dir}-msg`;
 
-    // Action buttons
+    // Actions
     const actions = document.createElement('div');
     actions.className = 'msg-actions';
+    const pinLabel = note.pinned ? '📌 Unpin' : '📌 Pin';
     actions.innerHTML = `
       <button onclick="startReply(${i})">↩ Reply</button>
       <button onclick="startEdit(${i})">✏ Edit</button>
-      <button class="del-btn" onclick="deleteNote(${i})">🗑 Delete</button>
+      <button class="pin-btn" onclick="togglePin(${i})">${pinLabel}</button>
+      <button class="del-btn" onclick="deleteNote(${i})">🗑</button>
     `;
 
     // Bubble
     const bubble = document.createElement('div');
-    bubble.className = 'bubble';
+    bubble.className = `bubble${note.cat && note.cat !== 'general' ? ' cat-'+note.cat : ''}`;
     bubble.id = `bubble-${i}`;
+
+    // Category badge
+    if (note.cat && note.cat !== 'general') {
+      const badge = document.createElement('div');
+      badge.className = `cat-badge ${note.cat}`;
+      const labels = {work:'💼 Work', personal:'👤 Personal', todo:'✅ Todo', urgent:'🔥 Urgent'};
+      badge.textContent = labels[note.cat] || note.cat;
+      bubble.appendChild(badge);
+    }
 
     // Reply preview
     if (note.replyTo) {
@@ -304,16 +491,15 @@ function renderFeed() {
     // Text
     const txt = document.createElement('div');
     txt.className = `msg-text ${dir}`;
-    txt.textContent = note.text;
+    txt.innerHTML = highlight(note.text, q);
 
     // Time
     const time = document.createElement('div');
     time.className = 'msg-time';
-    time.textContent = note.time;
+    time.innerHTML = note.time + (note.pinned ? ' <span class="pin-indicator">📌</span>' : '');
 
     bubble.appendChild(txt);
     bubble.appendChild(time);
-
     wrap.appendChild(actions);
     wrap.appendChild(bubble);
     feed.appendChild(wrap);
@@ -322,123 +508,129 @@ function renderFeed() {
   feed.scrollTop = feed.scrollHeight;
 }
 
+function renderPinned() {
+  const pinned = notes.filter(n => n.pinned);
+  const section = document.getElementById('pinnedSection');
+  const list = document.getElementById('pinnedList');
+  list.innerHTML = '';
+  if (pinned.length === 0) { section.classList.remove('visible'); return; }
+  section.classList.add('visible');
+  pinned.forEach(note => {
+    const i = notes.indexOf(note);
+    const div = document.createElement('div');
+    div.className = 'pinned-item';
+    const preview = note.text.length > 60 ? note.text.substring(0,60)+'...' : note.text;
+    div.innerHTML = `<span class="pin-text">${escHtml(preview)}</span><button onclick="togglePin(${i})" title="Unpin">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
 // ── Send ─────────────────────────────────────────────────────
 function sendMessage() {
   const input = document.getElementById('msgInput');
   const text = input.value.trim();
   if (!text) return;
-
-  const note = { text, time: getStamp(), replyTo: replyTo ? replyTo.text : null };
-  notes.push(note);
-  input.value = '';
-  input.style.height = 'auto';
-  cancelReply();
-  renderFeed();
-  triggerSave();
+  notes.push({
+    text, time: getStamp(), iso: new Date().toISOString(),
+    cat: activeCat, pinned: false,
+    replyTo: replyTo ? replyTo.text : null
+  });
+  input.value = ''; input.style.height = 'auto';
+  cancelReply(); renderFeed(); triggerSave();
 }
 
 // ── Reply ────────────────────────────────────────────────────
 function startReply(i) {
-  replyTo = { id: i, text: notes[i].text };
-  const bar = document.getElementById('replyBar');
-  const preview = notes[i].text.length > 50 ? notes[i].text.substring(0, 50) + '...' : notes[i].text;
+  replyTo = {id:i, text:notes[i].text};
+  const preview = notes[i].text.length > 50 ? notes[i].text.substring(0,50)+'...' : notes[i].text;
   document.getElementById('replyPreviewText').textContent = preview;
-  bar.style.display = 'flex';
+  document.getElementById('replyBar').style.display = 'flex';
   document.getElementById('msgInput').focus();
 }
-
 function cancelReply() {
   replyTo = null;
   document.getElementById('replyBar').style.display = 'none';
 }
 
+// ── Pin ──────────────────────────────────────────────────────
+function togglePin(i) {
+  notes[i].pinned = !notes[i].pinned;
+  renderFeed(); triggerSave();
+}
+
 // ── Edit ─────────────────────────────────────────────────────
 function startEdit(i) {
   const bubble = document.getElementById(`bubble-${i}`);
-  const oldText = notes[i].text;
-  const dir = detectDir(oldText);
-
+  const note = notes[i];
+  const dir = detectDir(note.text);
+  const catOptions = ['general','work','personal','todo','urgent'].map(c =>
+    `<option value="${c}" ${note.cat===c?'selected':''}>${c}</option>`
+  ).join('');
   bubble.innerHTML = `
-    ${notes[i].replyTo ? `<div class="reply-preview">↩ ${notes[i].replyTo}</div>` : ''}
-    <textarea class="edit-area" id="edit-${i}" style="direction:${dir};text-align:${dir==='rtl'?'right':'left'}">${oldText}</textarea>
+    ${note.replyTo ? `<div class="reply-preview">↩ ${escHtml(note.replyTo)}</div>` : ''}
+    <textarea class="edit-area" id="edit-${i}" style="direction:${dir};text-align:${dir==='rtl'?'right':'left'}">${escHtml(note.text)}</textarea>
     <div class="edit-actions">
+      <select class="cat-select" id="editCat-${i}">${catOptions}</select>
       <button class="save-edit" onclick="saveEdit(${i})">Save</button>
       <button class="cancel-edit" onclick="renderFeed()">Cancel</button>
     </div>
   `;
   const ta = document.getElementById(`edit-${i}`);
-  ta.focus();
-  ta.style.height = ta.scrollHeight + 'px';
+  ta.focus(); ta.style.height = ta.scrollHeight + 'px';
 }
-
 function saveEdit(i) {
   const ta = document.getElementById(`edit-${i}`);
-  notes[i].text = ta.value.trim() || notes[i].text;
-  renderFeed();
-  triggerSave();
+  const cat = document.getElementById(`editCat-${i}`).value;
+  if (ta.value.trim()) notes[i].text = ta.value.trim();
+  notes[i].cat = cat;
+  renderFeed(); triggerSave();
 }
 
 // ── Delete ───────────────────────────────────────────────────
 function deleteNote(i) {
   notes.splice(i, 1);
-  renderFeed();
-  triggerSave();
+  renderFeed(); triggerSave();
 }
 
-// ── Input auto-resize + Enter to send ────────────────────────
+// ── Input ────────────────────────────────────────────────────
 const msgInput = document.getElementById('msgInput');
 msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
-  msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
   const dir = detectDir(msgInput.value);
   msgInput.style.direction = dir;
   msgInput.style.textAlign = dir === 'rtl' ? 'right' : 'left';
 });
-msgInput.addEventListener('keydown', (e) => {
+msgInput.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
 // ── Save / Load ──────────────────────────────────────────────
-const statusEl = document.getElementById('status');
+const saveDot = document.getElementById('saveDot');
 let saveTimer;
-
 function triggerSave() {
   clearTimeout(saveTimer);
-  statusEl.style.color = '#ffd54f';
-  statusEl.title = 'Saving...';
+  saveDot.className = 'save-dot saving';
   saveTimer = setTimeout(saveNotes, 1500);
 }
-
 async function loadNotes() {
-  statusEl.style.color = '#aaa';
   try {
     const res = await fetch('/.netlify/functions/notes');
     const data = await res.json();
     notes = data.notes || [];
     renderFeed();
-    statusEl.style.color = '#a5d6a7';
-    statusEl.title = 'Auto-save on';
-  } catch(e) {
-    statusEl.style.color = '#ef9a9a';
-    statusEl.title = 'Load failed';
-  }
+    saveDot.className = 'save-dot';
+  } catch(e) { saveDot.className = 'save-dot err'; }
 }
-
 async function saveNotes() {
   try {
     await fetch('/.netlify/functions/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({notes})
     });
-    statusEl.style.color = '#a5d6a7';
-    statusEl.title = 'Saved ✓';
-  } catch(e) {
-    statusEl.style.color = '#ef9a9a';
-    statusEl.title = 'Save failed!';
-  }
+    saveDot.className = 'save-dot';
+  } catch(e) { saveDot.className = 'save-dot err'; }
 }
-
 loadNotes();
 </script>
 </body>
