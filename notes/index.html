@@ -8,7 +8,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-  /* LOGIN */
   .login-box { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 40px; width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
   .login-box h2 { text-align: center; margin-bottom: 28px; color: #e94560; font-size: 1.4rem; letter-spacing: 1px; }
   .login-box label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #aaa; }
@@ -20,23 +19,35 @@
   .step-indicator { text-align: center; margin-bottom: 20px; color: #555; font-size: 0.8rem; }
   .step-indicator span { color: #e94560; font-weight: bold; }
 
-  /* NOTES */
-  .notes-wrap { width: 100%; max-width: 900px; padding: 20px; display: none; }
-  .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  body.authed { align-items: flex-start; }
+  .notes-wrap { width: 100%; max-width: 960px; padding: 16px; display: none; flex-direction: column; height: 100vh; }
+  .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .notes-header h2 { color: #e94560; font-size: 1.2rem; }
   .notes-header a { color: #555; font-size: 0.82rem; text-decoration: none; cursor: pointer; transition: color 0.2s; }
   .notes-header a:hover { color: #e94560; }
-  textarea { width: 100%; height: calc(100vh - 120px); background: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 10px; padding: 20px; font-size: 1rem; line-height: 1.7; resize: none; outline: none; font-family: 'Segoe UI', sans-serif; transition: border 0.2s; }
+
+  .toolbar { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+  .toolbar button { background: #0f3460; border: 1px solid #1a4a8a; color: #eee; border-radius: 6px; padding: 5px 12px; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+  .toolbar button:hover { background: #e94560; border-color: #e94560; }
+  .toolbar .bold-btn { font-weight: bold; }
+  .toolbar .italic-btn { font-style: italic; }
+  .toolbar .sep { width: 1px; background: #1a4a8a; height: 28px; margin: 0 2px; }
+  .stamp-btn { color: #f0a500 !important; border-color: #f0a500 !important; }
+  .stamp-btn:hover { background: #f0a500 !important; color: #000 !important; }
+
+  textarea { width: 100%; flex: 1; background: #16213e; color: #eee; border: 1px solid #0f3460; border-radius: 10px; padding: 20px; font-size: 1.15rem; line-height: 1.8; resize: none; outline: none; font-family: 'Segoe UI', sans-serif; transition: border 0.2s; }
   textarea:focus { border-color: #e94560; }
-  .save-status { font-size: 0.78rem; color: #555; margin-top: 8px; text-align: right; transition: color 0.3s; }
+
+  .bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .save-status { font-size: 0.78rem; color: #555; transition: color 0.3s; }
   .save-status.saving { color: #f0a500; }
   .save-status.saved { color: #4caf50; }
-  .save-status.error { color: #ff6b6b; }
+  .save-status.err { color: #ff6b6b; }
+  .char-count { font-size: 0.75rem; color: #444; }
 </style>
 </head>
 <body>
 
-<!-- STEP 1: Username + Password -->
 <div class="login-box" id="step1">
   <h2>🔒 Notes Login</h2>
   <div class="step-indicator">Step <span>1</span> of 2</div>
@@ -48,7 +59,6 @@
   <button onclick="checkStep1()">Continue</button>
 </div>
 
-<!-- STEP 2: PIN -->
 <div class="login-box" id="step2" style="display:none">
   <h2>🔐 Verification</h2>
   <div class="step-indicator">Step <span>2</span> of 2</div>
@@ -58,28 +68,40 @@
   <button onclick="checkStep2()">Verify</button>
 </div>
 
-<!-- NOTES -->
 <div class="notes-wrap" id="notesWrap">
   <div class="notes-header">
     <h2>📝 My Notes</h2>
     <a onclick="logout()">Logout</a>
   </div>
+  <div class="toolbar">
+    <button class="bold-btn" onclick="insertAround('**','**')">B</button>
+    <button class="italic-btn" onclick="insertAround('_','_')">I</button>
+    <div class="sep"></div>
+    <button onclick="insertLine('• ')">• Bullet</button>
+    <button onclick="insertLine('☐ ')">☐ Task</button>
+    <button onclick="insertLine('✓ ')">✓ Done</button>
+    <div class="sep"></div>
+    <button onclick="insertLine('──────────────\n')">─ Line</button>
+    <div class="sep"></div>
+    <button class="stamp-btn" onclick="insertStamp()">🕐 Stamp</button>
+  </div>
   <textarea id="notepad" placeholder="Start typing..."></textarea>
-  <div class="save-status" id="status">Auto-save enabled</div>
+  <div class="bottom-bar">
+    <div class="save-status" id="status">Auto-save enabled</div>
+    <div class="char-count" id="charCount">0 chars</div>
+  </div>
 </div>
 
 <script>
-// ── Security config ──────────────────────────────────────────
-const USERNAME   = 'ibee';
-const PASS_SALT  = 'deeb1f9fdc8a5c9ffda5ae78848dd71c';
-const PASS_HASH  = 'a751f0093d4236715d0155eaa0ba741dcefa64d960e71ffb22c04d0c924b88df';
-const PIN_SALT   = 'b07951bdbff02fa68a96e1c74c447bfa';
-const PIN_HASH   = 'b17e91a9794022c063904c3a552e66fe4e93b2665d80a53dc94f8f77857c74e0';
-const MAX_ATT    = 5;
-const LOCK_TIME  = 600000; // 10 min ms
-// ────────────────────────────────────────────────────────────
+const USERNAME  = 'ibee';
+const PASS_SALT = 'deeb1f9fdc8a5c9ffda5ae78848dd71c';
+const PASS_HASH = 'a751f0093d4236715d0155eaa0ba741dcefa64d960e71ffb22c04d0c924b88df';
+const PIN_SALT  = 'b07951bdbff02fa68a96e1c74c447bfa';
+const PIN_HASH  = 'b17e91a9794022c063904c3a552e66fe4e93b2665d80a53dc94f8f77857c74e0';
+const MAX_ATT   = 5;
+const LOCK_TIME = 600000;
 
-let attempts = parseInt(sessionStorage.getItem('att') || '0');
+let attempts  = parseInt(sessionStorage.getItem('att') || '0');
 let lockUntil = parseInt(sessionStorage.getItem('lockUntil') || '0');
 
 async function sha256(salt, val) {
@@ -93,71 +115,89 @@ function isLocked() {
   if (Date.now() >= lockUntil) { attempts = 0; sessionStorage.setItem('att','0'); }
   return false;
 }
-
 function addFail() {
-  attempts++;
-  sessionStorage.setItem('att', attempts);
-  if (attempts >= MAX_ATT) {
-    lockUntil = Date.now() + LOCK_TIME;
-    sessionStorage.setItem('lockUntil', lockUntil);
-  }
+  attempts++; sessionStorage.setItem('att', attempts);
+  if (attempts >= MAX_ATT) { lockUntil = Date.now() + LOCK_TIME; sessionStorage.setItem('lockUntil', lockUntil); }
 }
-
-function showError(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.style.display = 'block';
-}
+function showError(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.style.display = 'block'; }
 
 async function checkStep1() {
-  if (isLocked()) { showError('err1', 'Too many attempts. Wait 10 minutes.'); return; }
+  if (isLocked()) { showError('err1','Too many attempts. Wait 10 minutes.'); return; }
   const user = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value;
-  const hash = await sha256(PASS_SALT, pass);
-  if (user === USERNAME && hash === PASS_HASH) {
+  if (user === USERNAME && await sha256(PASS_SALT, pass) === PASS_HASH) {
     attempts = 0; sessionStorage.setItem('att','0');
     document.getElementById('step1').style.display = 'none';
     document.getElementById('step2').style.display = 'block';
     document.getElementById('pin').focus();
   } else {
     addFail();
-    const rem = MAX_ATT - attempts;
-    showError('err1', rem > 0 ? `Wrong credentials. ${rem} attempts left.` : 'Locked. Wait 10 minutes.');
+    showError('err1', MAX_ATT - attempts > 0 ? `Wrong credentials. ${MAX_ATT - attempts} attempts left.` : 'Locked. Wait 10 minutes.');
   }
 }
 
 async function checkStep2() {
-  if (isLocked()) { showError('err2', 'Too many attempts. Wait 10 minutes.'); return; }
+  if (isLocked()) { showError('err2','Too many attempts. Wait 10 minutes.'); return; }
   const pin = document.getElementById('pin').value;
-  const hash = await sha256(PIN_SALT, pin);
-  if (hash === PIN_HASH) {
+  if (await sha256(PIN_SALT, pin) === PIN_HASH) {
     attempts = 0; sessionStorage.setItem('att','0');
     document.getElementById('step2').style.display = 'none';
-    document.getElementById('notesWrap').style.display = 'block';
+    document.getElementById('notesWrap').style.display = 'flex';
+    document.body.classList.add('authed');
     loadNotes();
   } else {
     addFail();
-    const rem = MAX_ATT - attempts;
-    showError('err2', rem > 0 ? `Wrong PIN. ${rem} attempts left.` : 'Locked. Wait 10 minutes.');
+    showError('err2', MAX_ATT - attempts > 0 ? `Wrong PIN. ${MAX_ATT - attempts} attempts left.` : 'Locked. Wait 10 minutes.');
   }
 }
 
-function logout() {
-  sessionStorage.clear();
-  location.reload();
-}
+function logout() { sessionStorage.clear(); location.reload(); }
 
-// Enter key support
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   if (document.getElementById('step1').style.display !== 'none') checkStep1();
   else if (document.getElementById('step2').style.display !== 'none') checkStep2();
 });
 
-// ── Notes save/load ──────────────────────────────────────────
 const pad = document.getElementById('notepad');
 const status = document.getElementById('status');
+const charCount = document.getElementById('charCount');
 let saveTimer;
+
+function insertAround(before, after) {
+  const s = pad.selectionStart, e = pad.selectionEnd;
+  const sel = pad.value.substring(s, e) || 'text';
+  pad.setRangeText(before + sel + after, s, e, 'end');
+  pad.focus(); triggerSave();
+}
+
+function insertLine(prefix) {
+  const s = pad.selectionStart;
+  pad.setRangeText('\n' + prefix, s, s, 'end');
+  pad.focus(); triggerSave();
+}
+
+function insertStamp() {
+  const now = new Date();
+  const d = now.toLocaleDateString('he-IL');
+  const t = now.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+  const stamp = `\n📅 ${d} ${t}\n`;
+  const s = pad.selectionStart;
+  pad.setRangeText(stamp, s, s, 'end');
+  pad.focus(); triggerSave();
+}
+
+pad.addEventListener('input', () => {
+  charCount.textContent = pad.value.length + ' chars';
+  triggerSave();
+});
+
+function triggerSave() {
+  clearTimeout(saveTimer);
+  status.className = 'save-status saving';
+  status.textContent = 'Saving...';
+  saveTimer = setTimeout(saveNotes, 1500);
+}
 
 async function loadNotes() {
   status.textContent = 'Loading...';
@@ -165,18 +205,10 @@ async function loadNotes() {
     const res = await fetch('/.netlify/functions/notes');
     const data = await res.json();
     pad.value = data.text || '';
+    charCount.textContent = pad.value.length + ' chars';
     status.textContent = 'Auto-save enabled';
-  } catch(e) {
-    status.textContent = 'Failed to load notes.';
-  }
+  } catch(e) { status.textContent = 'Failed to load.'; }
 }
-
-pad.addEventListener('input', () => {
-  clearTimeout(saveTimer);
-  status.className = 'save-status saving';
-  status.textContent = 'Saving...';
-  saveTimer = setTimeout(saveNotes, 1500);
-});
 
 async function saveNotes() {
   try {
@@ -190,10 +222,7 @@ async function saveNotes() {
       status.textContent = 'Saved ✓';
       setTimeout(() => { status.className = 'save-status'; status.textContent = 'Auto-save enabled'; }, 2000);
     }
-  } catch(e) {
-    status.className = 'save-status error';
-    status.textContent = 'Save failed!';
-  }
+  } catch(e) { status.className = 'save-status err'; status.textContent = 'Save failed!'; }
 }
 </script>
 </body>
