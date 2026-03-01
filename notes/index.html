@@ -8,9 +8,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #0d0d0d;
-    color: #c8c8c8;
-    font-family: 'Courier New', Courier, monospace;
+    background: #f0f2f5;
+    font-family: 'Segoe UI', Arial, sans-serif;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -19,152 +18,225 @@
 
   /* TOP BAR */
   .topbar {
+    background: #075e54;
+    color: #fff;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background: #111;
-    border-bottom: 1px solid #222;
-    font-size: 0.8rem;
-    color: #555;
     flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
-  .topbar .title { color: #4ec9b0; font-size: 0.95rem; letter-spacing: 2px; }
-  .topbar .clock { color: #569cd6; font-size: 0.85rem; }
-  .topbar .status { font-size: 0.75rem; }
-  .topbar .status.saving { color: #dcdcaa; }
-  .topbar .status.saved  { color: #4ec9b0; }
-  .topbar .status.err    { color: #f44747; }
+  .topbar .title { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; }
+  .topbar .clock { font-size: 0.82rem; opacity: 0.85; }
+  .topbar .save-status { font-size: 0.75rem; opacity: 0.8; }
 
-  /* TOOLBAR */
-  .toolbar {
-    display: flex;
-    gap: 6px;
-    padding: 6px 16px;
-    background: #111;
-    border-bottom: 1px solid #1e1e1e;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-  }
-  .toolbar button {
-    background: #1e1e1e;
-    border: 1px solid #333;
-    color: #9cdcfe;
-    border-radius: 4px;
-    padding: 3px 10px;
-    font-size: 0.8rem;
-    font-family: 'Courier New', monospace;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .toolbar button:hover { background: #264f78; border-color: #569cd6; }
-  .toolbar .sep { width: 1px; background: #333; margin: 0 4px; }
-
-  /* NOTES AREA */
-  #notes-container {
+  /* MESSAGES AREA */
+  #feed {
     flex: 1;
     overflow-y: auto;
-    padding: 16px 20px;
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
   }
 
-  .note-line {
+  .empty-hint {
+    text-align: center;
+    color: #aaa;
+    margin-top: 60px;
+    font-size: 0.95rem;
+  }
+
+  /* MESSAGE BUBBLE */
+  .msg-wrap {
     display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 2px 0;
-    border-radius: 3px;
-    transition: background 0.1s;
+    flex-direction: column;
+    align-items: flex-end;
+    position: relative;
   }
-  .note-line:hover { background: #151515; }
+  .msg-wrap.rtl-msg { align-items: flex-end; }
+  .msg-wrap.ltr-msg { align-items: flex-start; }
 
-  .note-time {
-    color: #569cd6;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    padding-top: 3px;
-    flex-shrink: 0;
-    opacity: 0.7;
-    min-width: 75px;
+  .bubble {
+    background: #fff;
+    border-radius: 12px 12px 2px 12px;
+    padding: 8px 12px 22px 12px;
+    max-width: 80%;
+    min-width: 120px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
+    word-break: break-word;
+  }
+  .msg-wrap.ltr-msg .bubble {
+    border-radius: 12px 12px 12px 2px;
+    background: #dcf8c6;
   }
 
-  .note-text {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #c8c8c8;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.05rem;
-    line-height: 1.6;
-    resize: none;
+  .bubble .msg-text {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #222;
+    white-space: pre-wrap;
+  }
+  .bubble .msg-text.rtl { direction: rtl; text-align: right; }
+  .bubble .msg-text.ltr { direction: ltr; text-align: left; }
+
+  .bubble .msg-time {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    font-size: 0.68rem;
+    color: #999;
+  }
+
+  /* REPLY PREVIEW inside bubble */
+  .reply-preview {
+    background: #f0f0f0;
+    border-left: 3px solid #075e54;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    color: #555;
+    max-width: 100%;
     overflow: hidden;
-    min-height: 26px;
-    width: 100%;
-    padding: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
-  /* RTL/LTR detection */
-  .note-text.rtl { direction: rtl; text-align: right; }
-  .note-text.ltr { direction: ltr; text-align: left; }
+  /* ACTION BUTTONS - appear on hover */
+  .msg-actions {
+    display: none;
+    gap: 4px;
+    margin-bottom: 4px;
+    flex-direction: row;
+  }
+  .msg-wrap:hover .msg-actions { display: flex; }
 
-  /* New line input at bottom */
-  .new-line-wrap {
+  .msg-actions button {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.15s;
     display: flex;
-    gap: 10px;
     align-items: center;
-    padding: 8px 20px;
-    border-top: 1px solid #1a1a1a;
-    background: #0d0d0d;
+    gap: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .msg-actions button:hover { background: #075e54; color: #fff; border-color: #075e54; }
+  .msg-actions .del-btn:hover { background: #e53935; border-color: #e53935; }
+
+  /* EDIT MODE */
+  .bubble textarea.edit-area {
+    width: 100%;
+    background: #fffde7;
+    border: 1px solid #075e54;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    min-height: 40px;
+  }
+  .edit-actions { display: flex; gap: 6px; margin-top: 6px; }
+  .edit-actions button {
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .save-edit { background: #075e54; color: #fff; }
+  .cancel-edit { background: #eee; color: #555; }
+
+  /* REPLY BAR */
+  #replyBar {
+    display: none;
+    background: #e8f5e9;
+    border-top: 1px solid #c8e6c9;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    color: #555;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #replyBar span { color: #075e54; font-weight: 600; }
+  #replyBar button { background: none; border: none; cursor: pointer; color: #888; font-size: 1rem; }
+
+  /* INPUT AREA */
+  .input-area {
+    background: #fff;
+    border-top: 1px solid #ddd;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
     flex-shrink: 0;
   }
-  .new-line-wrap .prompt { color: #4ec9b0; font-size: 0.85rem; white-space: nowrap; }
-  #newInput {
+  #msgInput {
     flex: 1;
-    background: transparent;
-    border: none;
+    border: 1px solid #ddd;
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    font-family: inherit;
     outline: none;
-    color: #d4d4d4;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.05rem;
-    caret-color: #4ec9b0;
+    resize: none;
+    max-height: 120px;
+    overflow-y: auto;
+    background: #f8f8f8;
+    transition: border 0.2s;
+    line-height: 1.4;
   }
+  #msgInput:focus { border-color: #075e54; background: #fff; }
+  #sendBtn {
+    background: #075e54;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  #sendBtn:hover { background: #128c7e; }
 
   /* Scrollbar */
-  #notes-container::-webkit-scrollbar { width: 6px; }
-  #notes-container::-webkit-scrollbar-track { background: #0d0d0d; }
-  #notes-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
-  .empty-hint { color: #333; font-size: 0.85rem; text-align: center; margin-top: 40px; }
+  #feed::-webkit-scrollbar { width: 5px; }
+  #feed::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <span class="title">> MY NOTES</span>
+  <span class="title">📝 My Notes</span>
   <span class="clock" id="clock"></span>
-  <span class="status" id="status">auto-save on</span>
+  <span class="save-status" id="status">●</span>
 </div>
 
-<div class="toolbar">
-  <button onclick="addSpecialLine('• ')">• bullet</button>
-  <button onclick="addSpecialLine('☐ ')">☐ task</button>
-  <button onclick="addSpecialLine('✓ ')">✓ done</button>
-  <div class="sep"></div>
-  <button onclick="addSpecialLine('──────────────────')">─ divider</button>
-  <div class="sep"></div>
-  <button onclick="clearAll()" style="color:#f44747;border-color:#f44747;">✕ clear all</button>
+<div id="feed"></div>
+
+<div id="replyBar">
+  <div>↩ Replying to: <span id="replyPreviewText"></span></div>
+  <button onclick="cancelReply()">✕</button>
 </div>
 
-<div id="notes-container">
-  <div class="empty-hint" id="emptyHint">Start typing below...</div>
-</div>
-
-<div class="new-line-wrap">
-  <span class="prompt">&gt;_</span>
-  <input type="text" id="newInput" placeholder="Type and press Enter..." autofocus autocomplete="off" spellcheck="true">
+<div class="input-area">
+  <textarea id="msgInput" placeholder="Write a note..." rows="1"></textarea>
+  <button id="sendBtn" onclick="sendMessage()">➤</button>
 </div>
 
 <script>
@@ -173,145 +245,182 @@ function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
     now.toLocaleDateString('he-IL') + ' ' +
-    now.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    now.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
 }
 setInterval(updateClock, 1000);
 updateClock();
 
 // ── RTL detection ────────────────────────────────────────────
 function detectDir(text) {
-  const hebrewRe = /[\u0590-\u05FF]/;
-  return hebrewRe.test(text) ? 'rtl' : 'ltr';
+  return /[\u0590-\u05FF]/.test(text) ? 'rtl' : 'ltr';
 }
-
-// ── Notes data ───────────────────────────────────────────────
-let notes = []; // [{time, text}]
 
 function getStamp() {
   const now = new Date();
   return now.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
 }
 
-function renderNotes() {
-  const container = document.getElementById('notes-container');
-  const hint = document.getElementById('emptyHint');
-  container.innerHTML = '';
+// ── State ────────────────────────────────────────────────────
+let notes = [];
+let replyTo = null; // {id, text}
+
+// ── Render ───────────────────────────────────────────────────
+function renderFeed() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
 
   if (notes.length === 0) {
-    container.appendChild(hint || (() => {
-      const d = document.createElement('div');
-      d.className = 'empty-hint';
-      d.textContent = 'Start typing below...';
-      return d;
-    })());
+    feed.innerHTML = '<div class="empty-hint">No notes yet. Start typing below 👇</div>';
     return;
   }
 
   notes.forEach((note, i) => {
-    const line = document.createElement('div');
-    line.className = 'note-line';
+    const dir = detectDir(note.text);
+    const wrap = document.createElement('div');
+    wrap.className = `msg-wrap ${dir}-msg`;
 
-    const timeEl = document.createElement('span');
-    timeEl.className = 'note-time';
-    timeEl.textContent = note.time;
+    // Action buttons
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    actions.innerHTML = `
+      <button onclick="startReply(${i})">↩ Reply</button>
+      <button onclick="startEdit(${i})">✏ Edit</button>
+      <button class="del-btn" onclick="deleteNote(${i})">🗑 Delete</button>
+    `;
 
-    const textEl = document.createElement('textarea');
-    textEl.className = 'note-text ' + detectDir(note.text);
-    textEl.value = note.text;
-    textEl.rows = 1;
-    autoResize(textEl);
+    // Bubble
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.id = `bubble-${i}`;
 
-    textEl.addEventListener('input', () => {
-      notes[i].text = textEl.value;
-      textEl.className = 'note-text ' + detectDir(textEl.value);
-      autoResize(textEl);
-      triggerSave();
-    });
+    // Reply preview
+    if (note.replyTo) {
+      const rp = document.createElement('div');
+      rp.className = 'reply-preview';
+      rp.textContent = '↩ ' + note.replyTo;
+      bubble.appendChild(rp);
+    }
 
-    textEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('newInput').focus();
-      }
-      if (e.key === 'Backspace' && textEl.value === '') {
-        e.preventDefault();
-        notes.splice(i, 1);
-        renderNotes();
-        triggerSave();
-        document.getElementById('newInput').focus();
-      }
-    });
+    // Text
+    const txt = document.createElement('div');
+    txt.className = `msg-text ${dir}`;
+    txt.textContent = note.text;
 
-    line.appendChild(timeEl);
-    line.appendChild(textEl);
-    container.appendChild(line);
+    // Time
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = note.time;
+
+    bubble.appendChild(txt);
+    bubble.appendChild(time);
+
+    wrap.appendChild(actions);
+    wrap.appendChild(bubble);
+    feed.appendChild(wrap);
   });
 
-  // scroll to bottom
-  container.scrollTop = container.scrollHeight;
+  feed.scrollTop = feed.scrollHeight;
 }
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
+// ── Send ─────────────────────────────────────────────────────
+function sendMessage() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
 
-function addLine(text) {
-  if (!text.trim() && text !== '──────────────────') return;
-  notes.push({ time: getStamp(), text });
-  renderNotes();
+  const note = { text, time: getStamp(), replyTo: replyTo ? replyTo.text : null };
+  notes.push(note);
+  input.value = '';
+  input.style.height = 'auto';
+  cancelReply();
+  renderFeed();
   triggerSave();
 }
 
-function addSpecialLine(prefix) {
-  addLine(prefix);
-  document.getElementById('newInput').focus();
+// ── Reply ────────────────────────────────────────────────────
+function startReply(i) {
+  replyTo = { id: i, text: notes[i].text };
+  const bar = document.getElementById('replyBar');
+  const preview = notes[i].text.length > 50 ? notes[i].text.substring(0, 50) + '...' : notes[i].text;
+  document.getElementById('replyPreviewText').textContent = preview;
+  bar.style.display = 'flex';
+  document.getElementById('msgInput').focus();
 }
 
-function clearAll() {
-  if (!confirm('Clear all notes?')) return;
-  notes = [];
-  renderNotes();
+function cancelReply() {
+  replyTo = null;
+  document.getElementById('replyBar').style.display = 'none';
+}
+
+// ── Edit ─────────────────────────────────────────────────────
+function startEdit(i) {
+  const bubble = document.getElementById(`bubble-${i}`);
+  const oldText = notes[i].text;
+  const dir = detectDir(oldText);
+
+  bubble.innerHTML = `
+    ${notes[i].replyTo ? `<div class="reply-preview">↩ ${notes[i].replyTo}</div>` : ''}
+    <textarea class="edit-area" id="edit-${i}" style="direction:${dir};text-align:${dir==='rtl'?'right':'left'}">${oldText}</textarea>
+    <div class="edit-actions">
+      <button class="save-edit" onclick="saveEdit(${i})">Save</button>
+      <button class="cancel-edit" onclick="renderFeed()">Cancel</button>
+    </div>
+  `;
+  const ta = document.getElementById(`edit-${i}`);
+  ta.focus();
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
+function saveEdit(i) {
+  const ta = document.getElementById(`edit-${i}`);
+  notes[i].text = ta.value.trim() || notes[i].text;
+  renderFeed();
   triggerSave();
 }
 
-// ── New input handler ────────────────────────────────────────
-document.getElementById('newInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    const val = e.target.value;
-    addLine(val);
-    e.target.value = '';
-  }
+// ── Delete ───────────────────────────────────────────────────
+function deleteNote(i) {
+  notes.splice(i, 1);
+  renderFeed();
+  triggerSave();
+}
+
+// ── Input auto-resize + Enter to send ────────────────────────
+const msgInput = document.getElementById('msgInput');
+msgInput.addEventListener('input', () => {
+  msgInput.style.height = 'auto';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+  const dir = detectDir(msgInput.value);
+  msgInput.style.direction = dir;
+  msgInput.style.textAlign = dir === 'rtl' ? 'right' : 'left';
 });
-
-// auto-detect direction as user types
-document.getElementById('newInput').addEventListener('input', (e) => {
-  e.target.style.direction = detectDir(e.target.value) === 'rtl' ? 'rtl' : 'ltr';
-  e.target.style.textAlign = detectDir(e.target.value) === 'rtl' ? 'right' : 'left';
+msgInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
 // ── Save / Load ──────────────────────────────────────────────
-const status = document.getElementById('status');
+const statusEl = document.getElementById('status');
 let saveTimer;
 
 function triggerSave() {
   clearTimeout(saveTimer);
-  status.className = 'status saving';
-  status.textContent = 'saving...';
+  statusEl.style.color = '#ffd54f';
+  statusEl.title = 'Saving...';
   saveTimer = setTimeout(saveNotes, 1500);
 }
 
 async function loadNotes() {
-  status.textContent = 'loading...';
+  statusEl.style.color = '#aaa';
   try {
     const res = await fetch('/.netlify/functions/notes');
     const data = await res.json();
     notes = data.notes || [];
-    renderNotes();
-    status.className = 'status';
-    status.textContent = 'auto-save on';
+    renderFeed();
+    statusEl.style.color = '#a5d6a7';
+    statusEl.title = 'Auto-save on';
   } catch(e) {
-    status.textContent = 'load failed';
+    statusEl.style.color = '#ef9a9a';
+    statusEl.title = 'Load failed';
   }
 }
 
@@ -322,12 +431,11 @@ async function saveNotes() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes })
     });
-    status.className = 'status saved';
-    status.textContent = 'saved ✓';
-    setTimeout(() => { status.className = 'status'; status.textContent = 'auto-save on'; }, 2000);
+    statusEl.style.color = '#a5d6a7';
+    statusEl.title = 'Saved ✓';
   } catch(e) {
-    status.className = 'status err';
-    status.textContent = 'save failed!';
+    statusEl.style.color = '#ef9a9a';
+    statusEl.title = 'Save failed!';
   }
 }
 
