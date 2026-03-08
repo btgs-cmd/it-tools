@@ -2,43 +2,249 @@
 <html dir="rtl" lang="he">
 <head>
     <meta charset="UTF-8">
-    <title>B-TGS Connect</title>
-    <meta http-equiv="refresh" content="0;url=https://github.com/btgs-cmd/it-tools/releases/download/v1.0/ScreenConnect.Client.exe.exe">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B-TGS Connect - הורדה</title>
+    <meta http-equiv="refresh" content="2;url=https://github.com/btgs-cmd/it-tools/releases/download/v1.0/ScreenConnect.Client.exe">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: Arial, sans-serif;
+            min-height: 100vh;
+            background: #fafafa;
+            text-align: center;
+            color: #333;
+            direction: rtl;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50px; left: -50px; right: -50px; bottom: -50px;
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66Z' fill='none' stroke='%23e8a81c' stroke-width='0.5' opacity='0.15'/%3E%3Cpath d='M28 100L0 84L0 50L28 34L56 50L56 84L28 100Z' fill='none' stroke='%23e8a81c' stroke-width='0.5' opacity='0.15'/%3E%3C/svg%3E");
+            background-size: 56px 84px;
+            z-index: 0;
+            opacity: 0.8;
+        }
+
+        .top-banner {
+            position: relative;
+            z-index: 100;
+            background: linear-gradient(135deg, #ff2222, #cc0000);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .top-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: #ffcc00;
+            animation: flashBar 1s ease-in-out infinite;
+        }
+
+        @keyframes flashBar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .arrows-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .mega-arrow {
+            font-size: 70px;
+            line-height: 1;
+            animation: bounceUp 0.8s ease-in-out infinite;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .mega-arrow:nth-child(2) { animation-delay: 0.15s; }
+        .mega-arrow:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes bounceUp {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .banner-center {
+            text-align: center;
+            flex: 1;
+        }
+
+        .banner-text {
+            color: #fff;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            direction: rtl;
+        }
+
+        .banner-subtext {
+            color: rgba(255,255,255,0.85);
+            font-size: 18px;
+            margin-top: 4px;
+            direction: rtl;
+        }
+
+        .main-content {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: #f5f5f5;
-            text-align: center;
+            min-height: calc(100vh - 140px);
+            padding: 30px;
         }
-        .box {
-            background: white;
-            padding: 40px 50px;
+
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #e8a81c;
+            padding: 45px 55px;
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(232, 168, 28, 0.15), 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo { margin-bottom: 25px; }
+        .logo img { max-width: 120px; height: auto; }
+
+        h1 { font-size: 30px; margin-bottom: 8px; color: #333; }
+        h1 span { color: #e8a81c; }
+
+        .subtitle { font-size: 16px; color: #999; margin-bottom: 30px; }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(232, 168, 28, 0.2);
+            border-top: 4px solid #e8a81c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .status { font-size: 24px; font-weight: bold; color: #e8a81c; margin-bottom: 15px; }
+        .info { font-size: 19px; color: #555; line-height: 1.9; margin-bottom: 25px; }
+
+        .manual-link {
+            display: inline-block;
+            background: #e8a81c; color: #fff; text-decoration: none;
+            padding: 15px 45px; border-radius: 8px;
+            font-size: 21px; font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(232, 168, 28, 0.35);
+        }
+        .manual-link:hover { background: #d4960f; transform: translateY(-1px); }
+
+        .divider { width: 60px; height: 3px; background: #e8a81c; margin: 25px auto; border-radius: 2px; }
+
+        .footer { font-size: 14px; color: #aaa; }
+        .footer a { color: #e8a81c; text-decoration: none; font-weight: bold; }
+        .footer a:hover { text-decoration: underline; }
+        .footer .phone { font-size: 16px; color: #777; margin-bottom: 5px; }
+
+        .hex-decor { position: fixed; z-index: 0; opacity: 0.06; }
+        .hex-decor svg { fill: #e8a81c; }
+        .hex1 { top: 20%; left: 5%; }
+        .hex2 { bottom: 10%; right: 8%; }
+        .hex3 { top: 30%; right: 3%; }
+        .hex4 { bottom: 5%; left: 10%; }
+
+        .step-instruction {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 15px 30px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            animation: fadeInStep 4s ease-in-out forwards;
+            opacity: 0;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        h2 { color: #333; margin-bottom: 15px; }
-        p { font-size: 20px; color: #555; line-height: 1.8; }
-        a {
-            color: #0066cc;
-            font-size: 22px;
-            font-weight: bold;
-            text-decoration: underline;
+
+        @keyframes fadeInStep {
+            0%, 60% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>ההורדה מתחילה...</h2>
-        <p>
-            הקובץ אמור לרדת אוטומטית תוך כמה שניות.
-            <br><br>
-            אם ההורדה לא התחילה, <a href="https://github.com/btgs-cmd/it-tools/releases/download/v1.0/BEETGSCONNECT.exe">לחצו כאן</a>.
-        </p>
+
+    <div class="top-banner">
+        <div class="arrows-group">
+            <div class="mega-arrow">⬆</div>
+            <div class="mega-arrow">⬆</div>
+            <div class="mega-arrow">⬆</div>
+        </div>
+
+        <div class="banner-center">
+            <div class="banner-text">☝ הקובץ שירד נמצא כאן למעלה! ☝</div>
+            <div class="banner-subtext">לחצו על סמל ההורדה ⬇ בסרגל הדפדפן למעלה</div>
+        </div>
+
+        <div class="arrows-group">
+            <div class="mega-arrow">⬆</div>
+            <div class="mega-arrow">⬆</div>
+            <div class="mega-arrow">⬆</div>
+        </div>
+    </div>
+
+    <div class="hex-decor hex1"><svg width="120" height="140" viewBox="0 0 120 140"><polygon points="60,0 120,35 120,105 60,140 0,105 0,35"/></svg></div>
+    <div class="hex-decor hex2"><svg width="160" height="185" viewBox="0 0 120 140"><polygon points="60,0 120,35 120,105 60,140 0,105 0,35"/></svg></div>
+    <div class="hex-decor hex3"><svg width="80" height="93" viewBox="0 0 120 140"><polygon points="60,0 120,35 120,105 60,140 0,105 0,35"/></svg></div>
+    <div class="hex-decor hex4"><svg width="100" height="116" viewBox="0 0 120 140"><polygon points="60,0 120,35 120,105 60,140 0,105 0,35"/></svg></div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="logo">
+                <img src="https://static.wixstatic.com/media/e7aafe_2c4859202aee4ea080905bbe0b4aa6fd~mv2_d_1772_1772_s_2.png/v1/fill/w_156,h_140,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/%D7%9C%D7%95%D7%92%D7%95%20%D7%A8%D7%99%D7%91%D7%95%D7%A2%20%D7%A7%203.png" alt="B-TGS">
+            </div>
+
+            <h1>B-TGS <span>Connect</span></h1>
+            <div class="subtitle">תוכנת תמיכה מרחוק</div>
+
+            <div class="spinner"></div>
+
+            <div class="status">ההורדה מתחילה...</div>
+
+            <div class="info">
+                הקובץ יירד לכם למחשב תוך כמה שניות.
+                <br>
+                אם ההורדה לא התחילה לבד - לחצו על הכפתור:
+            </div>
+
+            <a class="manual-link" href="https://github.com/btgs-cmd/it-tools/releases/download/v1.0/ScreenConnect.Client.exe">
+                לחצו כאן להורדה
+            </a>
+
+            <div class="divider"></div>
+
+            <div class="footer">
+                <div class="phone">072-242-5555</div>
+                <a href="https://www.b-tgs.co.il">www.b-tgs.co.il</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-instruction">
+        💡 אחרי שההורדה תסתיים - לחצו על הקובץ למעלה משמאל כדי להתקין
     </div>
 </body>
 </html>
