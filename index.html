@@ -130,10 +130,18 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 25px;
+            transition: opacity 0.5s ease;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .status { font-size: 24px; font-weight: bold; color: #e8a81c; margin-bottom: 15px; }
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e8a81c;
+            margin-bottom: 15px;
+            transition: all 0.5s ease;
+        }
+
         .info { font-size: 19px; color: #555; line-height: 1.9; margin-bottom: 25px; }
 
         .manual-link {
@@ -177,11 +185,26 @@
             opacity: 0;
             white-space: nowrap;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: opacity 0.5s ease;
         }
 
         @keyframes fadeInStep {
             0%, 60% { opacity: 0; transform: translateX(-50%) translateY(20px); }
             100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Checkmark that replaces spinner */
+        .checkmark {
+            display: none;
+            font-size: 50px;
+            margin: 0 auto 25px;
+            animation: popIn 0.4s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -220,14 +243,15 @@
             <h1>B-TGS <span>Connect</span></h1>
             <div class="subtitle">תוכנת תמיכה מרחוק</div>
 
-            <div class="spinner"></div>
+            <div class="spinner" id="spinner"></div>
+            <div class="checkmark" id="checkmark">✅</div>
 
-            <div class="status">ההורדה מתחילה...</div>
+            <div class="status" id="status">ההורדה מתחילה...</div>
 
-            <div class="info">
-                הקובץ יירד לכם למחשב תוך כמה שניות.
+            <div class="info" id="info">
+                הקובץ יירד לכם למחשב באופן אוטומטי.
                 <br>
-                אם ההורדה לא התחילה לבד - לחצו על הכפתור:
+                אם ההורדה לא התחילה תוך 15 שניות - לחצו על הכפתור:
             </div>
 
             <a class="manual-link" href="https://btgs.screenconnect.com/Bin/ScreenConnect.ClientSetup.exe?e=Access&y=Guest&c=%D7%96%D7%9E%D7%A0%D7%99%D7%99%D7%9D&c=%D7%96%D7%9E%D7%A0%D7%99%D7%99%D7%9D&c=%D7%96%D7%9E%D7%A0%D7%99%D7%99%D7%9D&c=%D7%96%D7%9E%D7%A0%D7%99%D7%99%D7%9D&c=&c=&c=&c=">
@@ -243,8 +267,34 @@
         </div>
     </div>
 
-    <div class="step-instruction">
+    <div class="step-instruction" id="bottomBar">
         💡 אחרי שההורדה תסתיים - לחצו על הקובץ למעלה משמאל כדי להתקין
     </div>
+
+    <script>
+        // After 6 seconds: hide spinner, show checkmark, update text, hide bottom bar
+        setTimeout(function() {
+            // Hide spinner
+            document.getElementById('spinner').style.opacity = '0';
+            setTimeout(function() {
+                document.getElementById('spinner').style.display = 'none';
+                // Show checkmark
+                document.getElementById('checkmark').style.display = 'block';
+            }, 500);
+
+            // Update status text
+            document.getElementById('status').textContent = 'ההורדה הושלמה!';
+            document.getElementById('status').style.color = '#27ae60';
+
+            // Update info text
+            document.getElementById('info').innerHTML = 'כעת לחצו על הקובץ שירד בסרגל הדפדפן למעלה<br>כדי להתחיל את ההתקנה.';
+
+            // Hide bottom bar
+            var bar = document.getElementById('bottomBar');
+            bar.style.animation = 'none';
+            bar.style.opacity = '0';
+            setTimeout(function() { bar.style.display = 'none'; }, 500);
+        }, 15000);
+    </script>
 </body>
 </html>
