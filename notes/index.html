@@ -5,859 +5,251 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>NoteFlow</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 <style>
-:root {
-  --bg: #f4f5f7;
-  --surface: #ffffff;
-  --surface2: #edf0f4;
-  --border: #e2e5ea;
-  --text: #1a1d23;
-  --text2: #5f6672;
-  --text3: #9ca3af;
-  --accent: #2563eb;
-  --accent-bg: #eef4ff;
-  --accent-dark: #1e40af;
-  --pin: #f59e0b;
-  --pin-bg: #fffbeb;
-  --danger: #ef4444;
-  --green: #10b981;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --font: 'IBM Plex Sans Hebrew', system-ui, sans-serif;
-  --mono: 'IBM Plex Mono', monospace;
-  --topbar: 56px;
-}
+:root{--bg:#f4f5f7;--surface:#fff;--surface2:#edf0f4;--border:#e2e5ea;--text:#1a1d23;--text2:#5f6672;--text3:#9ca3af;--accent:#2563eb;--accent-bg:#eef4ff;--accent-dark:#1e40af;--pin-c:#f59e0b;--pin-bg:#fffbeb;--danger:#ef4444;--green:#10b981;--radius:12px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--font:'IBM Plex Sans Hebrew',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; }
-body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+.pin-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.pin-screen.hidden{display:none}
+.pin-logo{font-size:36px}.pin-title{font-size:20px;font-weight:700}.pin-sub{font-size:13px;color:var(--text3);text-align:center;max-width:280px}
+.pin-dots{display:flex;gap:12px;margin:8px 0}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:.15s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.pin-dot.error{background:var(--danger);border-color:var(--danger);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:10px;margin-top:8px}
+.pin-key{width:72px;height:56px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);font-family:var(--font);font-size:22px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none}
+.pin-key:active{background:var(--surface2)}
+.pin-key.fn{font-size:13px;color:var(--text2);border:none;background:none}
+.pin-setup-fields{display:flex;flex-direction:column;gap:12px;width:260px}
+.pin-setup-fields input{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:16px;text-align:center;letter-spacing:8px;outline:none;background:var(--surface);color:var(--text)}
+.pin-setup-fields input:focus{border-color:var(--accent)}
+.pin-setup-btn{padding:14px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer}
+.pin-error{font-size:13px;color:var(--danger);font-weight:600;min-height:20px}
 
-/* ═══ TOPBAR ═══ */
-.topbar {
-  height: var(--topbar);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 12px;
-  flex-shrink: 0;
-  z-index: 100;
-}
+.app{display:none;flex-direction:column;height:100%}.app.active{display:flex}
 
-.topbar .logo {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;z-index:100}
+.topbar .logo{font-size:16px;font-weight:700;letter-spacing:-.5px;display:flex;align-items:center;gap:6px}
+.topbar .logo .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.save-dot{width:5px;height:5px;border-radius:50%;background:var(--green);transition:.3s}
+.save-dot.saving{background:var(--pin-c);animation:pulse 1s infinite}.save-dot.error{background:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.spacer{flex:1}
+.tb-btn{width:34px;height:34px;border:none;background:none;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text2)}
+.tb-btn:active{background:var(--surface2)}
 
-.topbar .logo .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  flex-shrink: 0;
-}
+.view{display:none;flex:1;flex-direction:column;overflow:hidden}.view.active{display:flex}
 
-.topbar .count {
-  font-size: 12px;
-  color: var(--text3);
-  font-weight: 500;
-}
+.clients-header{padding:16px 16px 8px;display:flex;align-items:center;gap:8px}
+.clients-header h2{font-size:22px;font-weight:700;flex:1}
+.add-client-btn{padding:8px 14px;border:1px solid var(--accent);border-radius:50px;background:var(--accent-bg);color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px}
+.add-client-btn:active{background:var(--accent);color:#fff}
 
-.topbar .spacer { flex: 1; }
+.search-wrap{padding:0 16px 12px}
+.search-wrap input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:14px;background:var(--surface);color:var(--text);outline:none}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap input::placeholder{color:var(--text3)}
 
-.tb-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: none;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  color: var(--text2);
-  transition: background 0.15s;
-}
-.tb-btn:hover { background: var(--surface2); }
-.tb-btn.active { background: var(--accent-bg); color: var(--accent); }
+.clients-list{flex:1;overflow-y:auto;padding:0 16px 20px;-webkit-overflow-scrolling:touch}
 
-/* ═══ SEARCH BAR ═══ */
-.search-bar {
-  display: none;
-  padding: 8px 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.search-bar.open { display: flex; gap: 8px; align-items: center; }
+.client-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow .15s}
+.client-card:active{box-shadow:var(--shadow-md)}
+.client-card.pinned{border-right:3px solid var(--pin-c)}
+.cc-avatar{width:42px;height:42px;border-radius:10px;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--accent);flex-shrink:0}
+.cc-info{flex:1;min-width:0}
+.cc-name{font-size:15px;font-weight:600}
+.cc-meta{font-size:12px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-count{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-bg);padding:2px 8px;border-radius:50px;flex-shrink:0}
+.cc-arrow{color:var(--text3);font-size:14px}
 
-.search-bar input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 14px;
-  background: var(--surface2);
-  color: var(--text);
-  outline: none;
-}
-.search-bar input:focus { border-color: var(--accent); background: var(--surface); }
-.search-bar .close-search {
-  border: none;
-  background: none;
-  font-size: 14px;
-  color: var(--accent);
-  font-family: var(--font);
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 8px;
-}
+.detail-header{padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.back-btn{width:34px;height:34px;border:none;background:none;border-radius:var(--radius-sm);font-size:18px;cursor:pointer;color:var(--accent);display:flex;align-items:center;justify-content:center}
+.dh-info{flex:1}.dh-name{font-size:17px;font-weight:700}.dh-count{font-size:12px;color:var(--text3)}
+.dh-actions{display:flex;gap:4px}
 
-/* ═══ CLIENT FILTER CHIPS ═══ */
-.filter-bar {
-  display: none;
-  padding: 8px 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  overflow-x: auto;
-  gap: 6px;
-  -webkit-overflow-scrolling: touch;
-}
-.filter-bar.show { display: flex; }
-.filter-bar::-webkit-scrollbar { display: none; }
+.notes-list{flex:1;overflow-y:auto;padding:12px 16px 120px;-webkit-overflow-scrolling:touch}
+.note-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;position:relative}
+.note-item.pinned{border-right:3px solid var(--pin-c);background:var(--pin-bg)}
+.ni-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.ni-time{font-size:11px;color:var(--text3);font-family:var(--mono)}.ni-date{font-size:11px;color:var(--text3)}.ni-pin{font-size:11px;color:var(--pin-c)}.ni-spacer{flex:1}
+.ni-text{font-size:14px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.ni-actions{display:none;position:absolute;top:8px;left:8px;gap:2px}
+.note-item:hover .ni-actions{display:flex}
+@media(hover:none){.note-item .ni-actions{display:flex;opacity:.4}}
+.ni-act{width:26px;height:26px;border:none;background:var(--surface2);border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ni-act:active{background:#dde1e8}.ni-act.del:active{background:#fee2e2}
 
-.filter-chip {
-  padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 50px;
-  background: var(--surface);
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text2);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-.filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.filter-chip:hover:not(.active) { background: var(--surface2); }
+.day-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 4px 6px}
 
-/* ═══ NOTES LIST ═══ */
-.notes-wrap {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 16px 100px;
-  -webkit-overflow-scrolling: touch;
-}
+.input-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,.04)}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+.input-bar textarea{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface2);resize:none;outline:none;min-height:40px;max-height:120px;line-height:1.5}
+.input-bar textarea:focus{border-color:var(--accent);background:var(--surface)}
+.input-bar textarea::placeholder{color:var(--text3)}
+.send-btn{width:40px;height:40px;border:none;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.send-btn:active{background:var(--accent-dark);transform:scale(.95)}
 
-.section-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 12px 4px 6px;
-}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:16px}
+.modal input,.modal textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;color:var(--text);outline:none;margin-bottom:12px}
+.modal input:focus,.modal textarea:focus{border-color:var(--accent)}
+.modal textarea{resize:vertical;min-height:80px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 20px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;border:none}
+.m-save{background:var(--accent);color:#fff}.m-cancel{background:var(--surface2);color:var(--text2)}.m-danger{background:var(--danger);color:#fff}
 
-/* ═══ NOTE CARD ═══ */
-.note {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  position: relative;
-  transition: box-shadow 0.15s, border-color 0.15s;
-  cursor: default;
-}
-.note:hover { box-shadow: var(--shadow-md); border-color: #d0d4da; }
-.note.pinned { border-right: 3px solid var(--pin); background: var(--pin-bg); }
-
-.note .n-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.note .n-client {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-bg);
-  padding: 2px 8px;
-  border-radius: 50px;
-}
-
-.note .n-pin {
-  font-size: 12px;
-  color: var(--pin);
-}
-
-.note .n-time {
-  font-size: 11px;
-  color: var(--text3);
-  margin-right: auto;
-  font-family: var(--mono);
-}
-
-.note .n-text {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.note .n-actions {
-  display: none;
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  gap: 2px;
-}
-.note:hover .n-actions { display: flex; }
-
-.n-act {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: var(--surface2);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.n-act:hover { background: #dde1e8; }
-.n-act.del:hover { background: #fee2e2; }
-
-/* Mobile: show actions always via long press or swipe — for now show on tap */
-@media (hover: none) {
-  .note .n-actions { display: flex; opacity: 0.5; }
-  .note .n-actions:active { opacity: 1; }
-}
-
-/* ═══ INPUT BAR ═══ */
-.input-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 100;
-  box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
-}
-
-.input-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.input-bar textarea {
-  flex: 1;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-family: var(--font);
-  font-size: 14px;
-  color: var(--text);
-  background: var(--surface2);
-  resize: none;
-  outline: none;
-  min-height: 40px;
-  max-height: 120px;
-  line-height: 1.5;
-}
-.input-bar textarea:focus { border-color: var(--accent); background: var(--surface); }
-.input-bar textarea::placeholder { color: var(--text3); }
-
-.send-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-.send-btn:hover { background: var(--accent-dark); }
-.send-btn:active { transform: scale(0.95); }
-
-/* Client tag input row */
-.tag-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.tag-row::-webkit-scrollbar { display: none; }
-
-.tag-row .tag-label {
-  font-size: 11px;
-  color: var(--text3);
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.tag-pick {
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 50px;
-  background: var(--surface);
-  font-family: var(--font);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text2);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-.tag-pick.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-.tag-custom {
-  padding: 4px 10px;
-  border: 1px dashed var(--border);
-  border-radius: 50px;
-  background: none;
-  font-family: var(--font);
-  font-size: 11px;
-  color: var(--text3);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ═══ EDIT MODAL ═══ */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.open { display: flex; }
-
-.modal {
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  animation: modalIn 0.2s ease;
-}
-@keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-.modal h3 {
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-.modal textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 14px;
-  color: var(--text);
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-}
-.modal textarea:focus { border-color: var(--accent); }
-
-.modal-btns {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  justify-content: flex-end;
-}
-.modal-btns button {
-  padding: 8px 20px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-.modal-btns .save { background: var(--accent); color: #fff; }
-.modal-btns .cancel { background: var(--surface2); color: var(--text2); }
-
-/* ═══ TOAST ═══ */
-.toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--text);
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
-  z-index: 300;
-  opacity: 0;
-  transition: all 0.3s ease;
-  pointer-events: none;
-  white-space: nowrap;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ═══ EMPTY STATE ═══ */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text3);
-}
-.empty-state .emoji { font-size: 40px; margin-bottom: 12px; display: block; }
-.empty-state .title { font-size: 16px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
-.empty-state .sub { font-size: 13px; }
-
-/* ═══ STATUS DOT ═══ */
-.save-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  flex-shrink: 0;
-  transition: background 0.3s;
-}
-.save-dot.saving { background: var(--pin); animation: pulse 1s infinite; }
-.save-dot.error { background: var(--danger); }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:10px 20px;border-radius:50px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.empty-msg{text-align:center;padding:50px 20px;color:var(--text3);font-size:14px}
+.empty-msg .emoji{font-size:36px;display:block;margin-bottom:8px}
 </style>
 </head>
 <body>
+<div class="pin-screen" id="pinScreen">
+<div id="pinSetup" style="display:none;flex-direction:column;align-items:center;gap:16px">
+<div class="pin-logo">🔐</div><div class="pin-title">הגדר קוד PIN</div>
+<div class="pin-sub">הקוד ישמש גם להצפנת הנתונים שלך</div>
+<div class="pin-setup-fields">
+<input type="password" id="pinNew" maxlength="6" placeholder="קוד (4-6 ספרות)" inputmode="numeric">
+<input type="password" id="pinConfirm" maxlength="6" placeholder="אשר קוד" inputmode="numeric">
+<button class="pin-setup-btn" onclick="setupPin()">הגדר והתחל</button>
+</div><div class="pin-error" id="setupError"></div></div>
+<div id="pinUnlock" style="display:none;flex-direction:column;align-items:center;gap:12px">
+<div class="pin-logo">🔒</div><div class="pin-title">NoteFlow</div>
+<div class="pin-sub">הקלד את קוד ה-PIN</div>
+<div class="pin-dots" id="pinDots"></div>
+<div class="pin-error" id="unlockError"></div>
+<div class="pin-pad" id="pinPad"></div></div></div>
 
-<!-- ═══ TOPBAR ═══ -->
-<div class="topbar">
-  <div class="logo">
-    <div class="dot"></div>
-    NoteFlow
-  </div>
-  <span class="count" id="noteCount">0 notes</span>
-  <div class="save-dot" id="saveDot"></div>
-  <div class="spacer"></div>
-  <button class="tb-btn" id="filterToggle" onclick="toggleFilterBar()" title="Filter">🏷️</button>
-  <button class="tb-btn" id="searchToggle" onclick="toggleSearch()" title="Search">🔍</button>
-</div>
-
-<!-- ═══ SEARCH ═══ -->
-<div class="search-bar" id="searchBar">
-  <input type="text" id="searchInput" placeholder="חפש בהערות..." oninput="applyFilters()">
-  <button class="close-search" onclick="toggleSearch()">ביטול</button>
-</div>
-
-<!-- ═══ CLIENT FILTER ═══ -->
-<div class="filter-bar" id="filterBar">
-  <button class="filter-chip active" onclick="filterByClient('all', this)">הכל</button>
-</div>
-
-<!-- ═══ NOTES LIST ═══ -->
-<div class="notes-wrap" id="notesWrap">
-  <div class="empty-state" id="emptyState">
-    <span class="emoji">📝</span>
-    <div class="title">אין הערות עדיין</div>
-    <div class="sub">כתוב משהו למטה כדי להתחיל</div>
-  </div>
-  <div id="pinnedSection" style="display:none">
-    <div class="section-label">📌 נעוצים</div>
-    <div id="pinnedList"></div>
-  </div>
-  <div id="notesSection">
-    <div id="notesList"></div>
-  </div>
-</div>
-
-<!-- ═══ INPUT BAR ═══ -->
-<div class="input-bar">
-  <div class="tag-row" id="tagRow">
-    <span class="tag-label">לקוח:</span>
-    <!-- populated dynamically -->
-  </div>
-  <div class="input-row">
-    <textarea id="noteInput" placeholder="הערה חדשה..." rows="1" oninput="autoResize(this)"></textarea>
-    <button class="send-btn" onclick="addNote()">↑</button>
-  </div>
-</div>
-
-<!-- ═══ EDIT MODAL ═══ -->
-<div class="modal-overlay" id="editOverlay" onclick="if(event.target===this)closeEdit()">
-  <div class="modal">
-    <h3>✏️ עריכה</h3>
-    <textarea id="editText" rows="4"></textarea>
-    <div class="modal-btns">
-      <button class="cancel" onclick="closeEdit()">ביטול</button>
-      <button class="save" onclick="saveEdit()">שמור</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ TOAST ═══ -->
+<div class="app" id="app">
+<div class="topbar"><div class="logo"><div class="dot"></div> NoteFlow</div><div class="save-dot" id="saveDot"></div><div class="spacer"></div><button class="tb-btn" onclick="showSettings()">⚙️</button></div>
+<div class="view active" id="viewClients">
+<div class="clients-header"><h2>לקוחות</h2><button class="add-client-btn" onclick="showAddClient()">+ חדש</button></div>
+<div class="search-wrap"><input type="text" id="globalSearch" placeholder="🔍 חפש בכל ההערות..." oninput="globalSearchFilter()"></div>
+<div class="clients-list" id="clientsList"></div></div>
+<div class="view" id="viewDetail">
+<div class="detail-header"><button class="back-btn" onclick="goBack()">→</button><div class="dh-info"><div class="dh-name" id="detailName"></div><div class="dh-count" id="detailCount"></div></div><div class="dh-actions"><button class="tb-btn" onclick="editClientName()">✏️</button><button class="tb-btn" onclick="deleteClient()">🗑️</button></div></div>
+<div class="notes-list" id="notesList"></div>
+<div class="input-bar" id="inputBar"><div class="input-row"><textarea id="noteInput" placeholder="הערה חדשה..." rows="1" oninput="autoResize(this)"></textarea><button class="send-btn" onclick="addNote()">↑</button></div></div></div>
+<div class="view" id="viewSearch">
+<div class="detail-header"><button class="back-btn" onclick="goBack()">→</button><div class="dh-info"><div class="dh-name">תוצאות חיפוש</div><div class="dh-count" id="searchCount"></div></div></div>
+<div class="notes-list" id="searchResults"></div></div></div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalContent"></div></div>
 <div class="toast" id="toast"></div>
-
 <script>
-// ═══════════════════════════════════════════════════════
-// NOTEFLOW — MSP Work Notes Tool
-// Storage: Netlify Functions + JSONbin
-// ═══════════════════════════════════════════════════════
+let data={clients:[],settings:{}},encryptionKey='',currentClientId=null,saveTimer=null,enteredPin='';
+const dot=document.getElementById('saveDot');
+function getPinHash(){return localStorage.getItem('nf_pin_hash')}
+function setPinHash(p){localStorage.setItem('nf_pin_hash',CryptoJS.SHA256(p).toString());localStorage.setItem('nf_pin_len',p.length.toString())}
+function verifyPin(p){return CryptoJS.SHA256(p).toString()===getPinHash()}
+function encrypt(o){return CryptoJS.AES.encrypt(JSON.stringify(o),encryptionKey).toString()}
+function decrypt(c){try{const b=CryptoJS.AES.decrypt(c,encryptionKey);const j=b.toString(CryptoJS.enc.Utf8);return j?JSON.parse(j):null}catch(e){return null}}
 
-let notes = [];
-let currentFilter = 'all';
-let searchQuery = '';
-let selectedClient = '';
-let editingId = null;
-let saveTimer = null;
-const dot = document.getElementById('saveDot');
+function initPinScreen(){if(!getPinHash()){document.getElementById('pinSetup').style.display='flex';document.getElementById('pinUnlock').style.display='none'}else{document.getElementById('pinSetup').style.display='none';document.getElementById('pinUnlock').style.display='flex';buildPinPad()}}
 
-// ── Client list (auto-populated from notes + defaults) ──
-const defaultClients = ['כללי'];
+window.setupPin=function(){const p=document.getElementById('pinNew').value,c=document.getElementById('pinConfirm').value,e=document.getElementById('setupError');
+if(p.length<4||p.length>6){e.textContent='4-6 ספרות';return}if(!/^\d+$/.test(p)){e.textContent='רק ספרות';return}if(p!==c){e.textContent='לא תואם';return}
+setPinHash(p);encryptionKey=p;data={clients:[{id:'general',name:'כללי',notes:[],pinned:false}],settings:{}};triggerSave();unlockApp()};
 
-function getClients() {
-  const set = new Set(defaultClients);
-  notes.forEach(n => { if (n.client) set.add(n.client); });
-  return [...set];
-}
+function buildPinPad(){const len=parseInt(localStorage.getItem('nf_pin_len')||'4');
+const d=document.getElementById('pinDots');d.innerHTML='';for(let i=0;i<len;i++)d.innerHTML+='<div class="pin-dot" id="dot'+i+'"></div>';
+const pad=document.getElementById('pinPad');pad.innerHTML='';
+for(let i=1;i<=9;i++)pad.innerHTML+='<button class="pin-key" onclick="pressKey(\''+i+'\')">'+i+'</button>';
+pad.innerHTML+='<button class="pin-key fn" onclick="clearPin()">מחק</button><button class="pin-key" onclick="pressKey(\'0\')">0</button><button class="pin-key fn" onclick="submitPin()">אשר</button>'}
 
-function detectDirection(text) {
-  const heb = /[\u0590-\u05FF]/;
-  return heb.test(text.charAt(0)) ? 'rtl' : 'ltr';
-}
+window.pressKey=function(k){const len=parseInt(localStorage.getItem('nf_pin_len')||'4');if(enteredPin.length>=len)return;enteredPin+=k;updateDots();if(enteredPin.length===len)setTimeout(submitPin,150)};
+window.clearPin=function(){enteredPin=enteredPin.slice(0,-1);updateDots();document.getElementById('unlockError').textContent='';document.querySelectorAll('.pin-dot').forEach(d=>d.classList.remove('error'))};
+window.submitPin=function(){if(verifyPin(enteredPin)){encryptionKey=enteredPin;loadData().then(()=>unlockApp())}else{document.getElementById('unlockError').textContent='קוד שגוי';document.querySelectorAll('.pin-dot').forEach(d=>d.classList.add('error'));setTimeout(()=>{enteredPin='';updateDots();document.querySelectorAll('.pin-dot').forEach(d=>d.classList.remove('error'));document.getElementById('unlockError').textContent=''},800)}};
+function updateDots(){const len=parseInt(localStorage.getItem('nf_pin_len')||'4');for(let i=0;i<len;i++){const el=document.getElementById('dot'+i);if(el)el.classList.toggle('filled',i<enteredPin.length)}}
+function unlockApp(){document.getElementById('pinScreen').classList.add('hidden');document.getElementById('app').classList.add('active');renderClients()}
 
-// ── Auto-resize textarea ──
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
+async function loadData(){try{const r=await fetch('/.netlify/functions/notes');const j=await r.json();const raw=j.notes;
+if(typeof raw==='string'){const d=decrypt(raw);data=d||{clients:[{id:'general',name:'כללי',notes:[],pinned:false}],settings:{}}}
+else if(Array.isArray(raw)&&raw.length>0){const m={};raw.forEach(n=>{const c=n.client||'כללי';if(!m[c])m[c]={id:c.replace(/\s+/g,'_').toLowerCase()+'_'+Date.now(),name:c,notes:[],pinned:false};m[c].notes.push({id:n.id,text:n.text,ts:n.ts,pinned:n.pinned||false})});data={clients:Object.values(m),settings:{}};triggerSave()}
+else{data={clients:[{id:'general',name:'כללי',notes:[],pinned:false}],settings:{}}}
+dot.className='save-dot'}catch(e){dot.className='save-dot error';data={clients:[{id:'general',name:'כללי',notes:[],pinned:false}],settings:{}}}}
 
-// ── Render ──
-function render() {
-  const filtered = getFilteredNotes();
-  const pinned = filtered.filter(n => n.pinned);
-  const unpinned = filtered.filter(n => !n.pinned);
+function triggerSave(){clearTimeout(saveTimer);dot.className='save-dot saving';saveTimer=setTimeout(doSave,1200)}
+async function doSave(){try{const enc=encrypt(data);const r=await fetch('/.netlify/functions/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes:enc})});dot.className=r.ok?'save-dot':'save-dot error'}catch(e){dot.className='save-dot error'}}
 
-  // Update count
-  document.getElementById('noteCount').textContent = `${notes.length} notes`;
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function detectDir(t){return/[\u0590-\u05FF]/.test(t.charAt(0))?'rtl':'ltr'}
 
-  // Pinned section
-  const pinnedSec = document.getElementById('pinnedSection');
-  const pinnedList = document.getElementById('pinnedList');
-  if (pinned.length) {
-    pinnedSec.style.display = 'block';
-    pinnedList.innerHTML = pinned.map(n => renderNote(n)).join('');
-  } else {
-    pinnedSec.style.display = 'none';
-  }
+function renderClients(){const list=document.getElementById('clientsList');
+if(!data.clients.length){list.innerHTML='<div class="empty-msg"><span class="emoji">📂</span>אין לקוחות<br>לחץ "+ חדש"</div>';return}
+const sorted=[...data.clients].sort((a,b)=>{if(a.pinned&&!b.pinned)return -1;if(!a.pinned&&b.pinned)return 1;const al=a.notes.length?Math.max(...a.notes.map(n=>n.ts)):0;const bl=b.notes.length?Math.max(...b.notes.map(n=>n.ts)):0;return bl-al});
+list.innerHTML=sorted.map(c=>{const cnt=c.notes.length;const last=c.notes.length?[...c.notes].sort((a,b)=>b.ts-a.ts)[0]:null;
+const txt=last?(last.text.length>50?last.text.substring(0,50)+'...':last.text):'ריק';
+const dt=last?new Date(last.ts).toLocaleDateString('he-IL',{day:'numeric',month:'short'}):'';
+return'<div class="client-card'+(c.pinned?' pinned':'')+'" onclick="openClient(\''+c.id+'\')"><div class="cc-avatar">'+esc(c.name.substring(0,2))+'</div><div class="cc-info"><div class="cc-name">'+esc(c.name)+'</div><div class="cc-meta">'+esc(txt)+' · '+dt+'</div></div><span class="cc-count">'+cnt+'</span><span class="cc-arrow">←</span></div>'}).join('')}
 
-  // Notes
-  const notesList = document.getElementById('notesList');
-  const empty = document.getElementById('emptyState');
+window.openClient=function(id){currentClientId=id;document.getElementById('viewClients').classList.remove('active');document.getElementById('viewDetail').classList.add('active');document.getElementById('viewSearch').classList.remove('active');renderDetail()};
+window.goBack=function(){currentClientId=null;document.getElementById('viewDetail').classList.remove('active');document.getElementById('viewSearch').classList.remove('active');document.getElementById('viewClients').classList.add('active');document.getElementById('globalSearch').value='';renderClients()};
+function getClient(id){return data.clients.find(c=>c.id===id)}
 
-  if (unpinned.length) {
-    empty.style.display = 'none';
-    // Group by date
-    const groups = {};
-    unpinned.forEach(n => {
-      const d = new Date(n.ts);
-      const key = d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(n);
-    });
-    let html = '';
-    for (const [day, items] of Object.entries(groups)) {
-      html += `<div class="section-label">${day}</div>`;
-      html += items.map(n => renderNote(n)).join('');
-    }
-    notesList.innerHTML = html;
-  } else if (!pinned.length) {
-    empty.style.display = 'block';
-    notesList.innerHTML = '';
-  } else {
-    empty.style.display = 'none';
-    notesList.innerHTML = '';
-  }
+function renderDetail(){const cl=getClient(currentClientId);if(!cl)return;
+document.getElementById('detailName').textContent=cl.name;document.getElementById('detailCount').textContent=cl.notes.length+' הערות';
+const list=document.getElementById('notesList');
+if(!cl.notes.length){list.innerHTML='<div class="empty-msg"><span class="emoji">📝</span>אין הערות<br>כתוב למטה</div>';return}
+const sorted=[...cl.notes].sort((a,b)=>b.ts-a.ts);
+const groups={};sorted.forEach(n=>{const d=new Date(n.ts);const k=d.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});if(!groups[k])groups[k]=[];groups[k].push(n)});
+let html='';for(const[day,items]of Object.entries(groups)){html+='<div class="day-label">'+day+'</div>';
+items.forEach(n=>{const d=new Date(n.ts);const t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');const dt=d.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+html+='<div class="note-item'+(n.pinned?' pinned':'')+'"><div class="ni-actions"><button class="ni-act" onclick="toggleNotePin(\''+n.id+'\')">'+(n.pinned?'📌':'📍')+'</button><button class="ni-act" onclick="editNote(\''+n.id+'\')">✏️</button><button class="ni-act del" onclick="deleteNote(\''+n.id+'\')">🗑️</button></div><div class="ni-top">'+(n.pinned?'<span class="ni-pin">📌</span>':'')+'<span class="ni-time">'+t+'</span><span class="ni-date">'+dt+'</span><span class="ni-spacer"></span></div><div class="ni-text" dir="'+detectDir(n.text)+'">'+esc(n.text)+'</div></div>'})}
+list.innerHTML=html}
 
-  // Update filter chips
-  renderFilterChips();
-  renderTagPicker();
-}
+window.addNote=function(){const input=document.getElementById('noteInput');const text=input.value.trim();if(!text||!currentClientId)return;
+const cl=getClient(currentClientId);if(!cl)return;
+cl.notes.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,4),text:text,ts:Date.now(),pinned:false});
+input.value='';input.style.height='auto';renderDetail();triggerSave()};
+document.getElementById('noteInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addNote()}});
+window.autoResize=function(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'};
 
-function renderNote(n) {
-  const d = new Date(n.ts);
-  const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  const dir = detectDirection(n.text);
-  const pinIcon = n.pinned ? '📌' : '';
-  const clientTag = n.client && n.client !== 'כללי' ? `<span class="n-client">${n.client}</span>` : '';
+window.toggleNotePin=function(nid){const cl=getClient(currentClientId);const n=cl&&cl.notes.find(x=>x.id===nid);if(n){n.pinned=!n.pinned;renderDetail();triggerSave()}};
+window.editNote=function(nid){const cl=getClient(currentClientId);const n=cl&&cl.notes.find(x=>x.id===nid);if(!n)return;
+showModal('✏️ עריכה','<textarea id="mEditText" rows="4">'+esc(n.text)+'</textarea>',[{label:'ביטול',cls:'m-cancel',action:'closeModal()'},{label:'שמור',cls:'m-save',action:"saveNoteEdit('"+nid+"')"}])};
+window.saveNoteEdit=function(nid){const cl=getClient(currentClientId);const n=cl&&cl.notes.find(x=>x.id===nid);if(n){n.text=document.getElementById('mEditText').value.trim();renderDetail();triggerSave()}closeModal()};
+window.deleteNote=function(nid){const cl=getClient(currentClientId);if(!cl)return;const i=cl.notes.findIndex(x=>x.id===nid);if(i>-1){const rm=cl.notes.splice(i,1)[0];renderDetail();triggerSave();showToast('🗑️ נמחק',()=>{cl.notes.splice(i,0,rm);renderDetail();triggerSave()})}};
 
-  return `<div class="note${n.pinned ? ' pinned' : ''}" data-id="${n.id}">
-    <div class="n-actions">
-      <button class="n-act" onclick="togglePin('${n.id}')" title="${n.pinned ? 'בטל נעיצה' : 'נעץ'}">${n.pinned ? '📌' : '📍'}</button>
-      <button class="n-act" onclick="openEdit('${n.id}')" title="ערוך">✏️</button>
-      <button class="n-act del" onclick="deleteNote('${n.id}')" title="מחק">🗑️</button>
-    </div>
-    <div class="n-top">
-      ${clientTag}
-      ${pinIcon ? `<span class="n-pin">${pinIcon}</span>` : ''}
-      <span class="n-time">${time}</span>
-    </div>
-    <div class="n-text" dir="${dir}">${escapeHtml(n.text)}</div>
-  </div>`;
-}
+window.showAddClient=function(){showModal('➕ לקוח חדש','<input type="text" id="mClientName" placeholder="שם הלקוח..." autofocus>',[{label:'ביטול',cls:'m-cancel',action:'closeModal()'},{label:'הוסף',cls:'m-save',action:'addClient()'}]);setTimeout(()=>document.getElementById('mClientName')?.focus(),200)};
+window.addClient=function(){const n=document.getElementById('mClientName')?.value.trim();if(!n)return;data.clients.push({id:Date.now().toString(36)+Math.random().toString(36).substr(2,4),name:n,notes:[],pinned:false});renderClients();triggerSave();closeModal();showToast('✅ נוסף')};
+window.editClientName=function(){const cl=getClient(currentClientId);if(!cl)return;showModal('✏️ שנה שם','<input type="text" id="mRename" value="'+esc(cl.name)+'">',[{label:'ביטול',cls:'m-cancel',action:'closeModal()'},{label:'שמור',cls:'m-save',action:'saveClientName()'}])};
+window.saveClientName=function(){const cl=getClient(currentClientId);if(cl){cl.name=document.getElementById('mRename').value.trim();document.getElementById('detailName').textContent=cl.name;triggerSave()}closeModal()};
+window.deleteClient=function(){const cl=getClient(currentClientId);if(!cl)return;showModal('🗑️ מחיקה','<p style="font-size:14px;color:var(--text2);margin-bottom:12px">למחוק את "<b>'+esc(cl.name)+'</b>" וכל ההערות?</p>',[{label:'ביטול',cls:'m-cancel',action:'closeModal()'},{label:'מחק',cls:'m-danger',action:'confirmDeleteClient()'}])};
+window.confirmDeleteClient=function(){data.clients=data.clients.filter(c=>c.id!==currentClientId);triggerSave();closeModal();goBack();showToast('🗑️ נמחק')};
 
-function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+window.globalSearchFilter=function(){const q=document.getElementById('globalSearch').value.trim().toLowerCase();
+if(!q){document.getElementById('viewSearch').classList.remove('active');document.getElementById('viewClients').classList.add('active');return}
+document.getElementById('viewClients').classList.remove('active');document.getElementById('viewSearch').classList.add('active');
+const results=[];data.clients.forEach(c=>{c.notes.forEach(n=>{if(n.text.toLowerCase().includes(q)||c.name.toLowerCase().includes(q))results.push({...n,clientName:c.name,clientId:c.id})})});
+document.getElementById('searchCount').textContent=results.length+' תוצאות';
+const el=document.getElementById('searchResults');
+if(!results.length){el.innerHTML='<div class="empty-msg"><span class="emoji">🔍</span>לא נמצא</div>';return}
+el.innerHTML=results.sort((a,b)=>b.ts-a.ts).map(r=>{const d=new Date(r.ts);const t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+return'<div class="note-item" onclick="openClient(\''+r.clientId+'\')"><div class="ni-top"><span style="font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-bg);padding:2px 8px;border-radius:50px">'+esc(r.clientName)+'</span><span class="ni-time">'+t+'</span></div><div class="ni-text" dir="'+detectDir(r.text)+'">'+esc(r.text)+'</div></div>'}).join('')};
 
-function getFilteredNotes() {
-  let result = [...notes];
-  // Client filter
-  if (currentFilter !== 'all') {
-    result = result.filter(n => n.client === currentFilter);
-  }
-  // Search
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    result = result.filter(n => n.text.toLowerCase().includes(q) || (n.client || '').toLowerCase().includes(q));
-  }
-  return result;
-}
+window.showSettings=function(){showModal('⚙️ הגדרות','<button class="m-cancel" style="width:100%;padding:12px;margin-bottom:8px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;cursor:pointer;border:1px solid var(--border)" onclick="changePin()">🔑 שנה PIN</button><button class="m-cancel" style="width:100%;padding:12px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;cursor:pointer;border:1px solid var(--border)" onclick="exportData()">📋 ייצוא</button>',[{label:'סגור',cls:'m-cancel',action:'closeModal()'}])};
+window.changePin=function(){closeModal();showModal('🔑 שנה PIN','<input type="password" id="mOldPin" placeholder="PIN נוכחי" inputmode="numeric" maxlength="6"><input type="password" id="mNewPin" placeholder="PIN חדש" inputmode="numeric" maxlength="6"><input type="password" id="mConfirmPin" placeholder="אשר" inputmode="numeric" maxlength="6">',[{label:'ביטול',cls:'m-cancel',action:'closeModal()'},{label:'שמור',cls:'m-save',action:'savePinChange()'}])};
+window.savePinChange=function(){const o=document.getElementById('mOldPin').value,n=document.getElementById('mNewPin').value,c=document.getElementById('mConfirmPin').value;if(!verifyPin(o)){showToast('❌ PIN שגוי');return}if(n.length<4){showToast('❌ מינימום 4');return}if(n!==c){showToast('❌ לא תואם');return}setPinHash(n);encryptionKey=n;triggerSave();closeModal();showToast('✅ עודכן')};
+window.exportData=function(){let t='';data.clients.forEach(c=>{t+='=== '+c.name+' ===\n';c.notes.sort((a,b)=>a.ts-b.ts).forEach(n=>{const d=new Date(n.ts);t+='['+d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+'] '+n.text+'\n'});t+='\n'});
+const blob=new Blob(['\uFEFF'+t],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='noteflow-export.txt';a.click();URL.revokeObjectURL(url);showToast('📋 הורד')};
 
-// ── Filter chips ──
-function renderFilterChips() {
-  const bar = document.getElementById('filterBar');
-  const clients = getClients();
-  const chips = [`<button class="filter-chip${currentFilter === 'all' ? ' active' : ''}" onclick="filterByClient('all', this)">הכל (${notes.length})</button>`];
-  clients.forEach(c => {
-    const count = notes.filter(n => n.client === c).length;
-    if (count > 0) {
-      chips.push(`<button class="filter-chip${currentFilter === c ? ' active' : ''}" onclick="filterByClient('${c}', this)">${c} (${count})</button>`);
-    }
-  });
-  bar.innerHTML = chips.join('');
-}
+function showModal(title,body,buttons){document.getElementById('modalContent').innerHTML='<h3>'+title+'</h3>'+body+'<div class="modal-btns">'+buttons.map(b=>'<button class="'+b.cls+'" onclick="'+b.action+'">'+b.label+'</button>').join('')+'</div>';document.getElementById('modalOverlay').classList.add('open')}
+window.closeModal=function(){document.getElementById('modalOverlay').classList.remove('open')};
 
-function filterByClient(client) {
-  currentFilter = client;
-  render();
-}
-
-function toggleFilterBar() {
-  const bar = document.getElementById('filterBar');
-  bar.classList.toggle('show');
-  document.getElementById('filterToggle').classList.toggle('active');
-}
-
-// ── Tag picker in input ──
-function renderTagPicker() {
-  const row = document.getElementById('tagRow');
-  const clients = getClients();
-  let html = '<span class="tag-label">לקוח:</span>';
-  clients.forEach(c => {
-    html += `<button class="tag-pick${selectedClient === c ? ' active' : ''}" onclick="pickClient('${c}')">${c}</button>`;
-  });
-  html += `<button class="tag-custom" onclick="promptNewClient()">+ חדש</button>`;
-  row.innerHTML = html;
-}
-
-function pickClient(c) {
-  selectedClient = selectedClient === c ? '' : c;
-  renderTagPicker();
-}
-
-function promptNewClient() {
-  const name = prompt('שם לקוח חדש:');
-  if (name && name.trim()) {
-    selectedClient = name.trim();
-    render();
-  }
-}
-
-// ── Search ──
-function toggleSearch() {
-  const bar = document.getElementById('searchBar');
-  bar.classList.toggle('open');
-  document.getElementById('searchToggle').classList.toggle('active');
-  if (bar.classList.contains('open')) {
-    document.getElementById('searchInput').focus();
-  } else {
-    document.getElementById('searchInput').value = '';
-    searchQuery = '';
-    render();
-  }
-}
-
-function applyFilters() {
-  searchQuery = document.getElementById('searchInput').value;
-  render();
-}
-
-// ── Add note ──
-function addNote() {
-  const input = document.getElementById('noteInput');
-  const text = input.value.trim();
-  if (!text) return;
-
-  const note = {
-    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-    text,
-    client: selectedClient || 'כללי',
-    ts: Date.now(),
-    pinned: false
-  };
-
-  notes.unshift(note);
-  input.value = '';
-  input.style.height = 'auto';
-  render();
-  triggerSave();
-  document.getElementById('notesWrap').scrollTop = 0;
-}
-
-// Ctrl+Enter / Enter to send
-document.getElementById('noteInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    addNote();
-  }
-});
-
-// ── Pin ──
-function togglePin(id) {
-  const n = notes.find(x => x.id === id);
-  if (n) { n.pinned = !n.pinned; render(); triggerSave(); }
-}
-
-// ── Delete ──
-function deleteNote(id) {
-  const i = notes.findIndex(x => x.id === id);
-  if (i > -1) {
-    const removed = notes.splice(i, 1)[0];
-    render();
-    triggerSave();
-    showToast('🗑️ נמחק', () => {
-      notes.splice(i, 0, removed);
-      render();
-      triggerSave();
-    });
-  }
-}
-
-// ── Edit ──
-function openEdit(id) {
-  const n = notes.find(x => x.id === id);
-  if (!n) return;
-  editingId = id;
-  document.getElementById('editText').value = n.text;
-  document.getElementById('editOverlay').classList.add('open');
-}
-
-function closeEdit() {
-  editingId = null;
-  document.getElementById('editOverlay').classList.remove('open');
-}
-
-function saveEdit() {
-  if (!editingId) return;
-  const n = notes.find(x => x.id === editingId);
-  if (n) {
-    n.text = document.getElementById('editText').value.trim();
-    render();
-    triggerSave();
-  }
-  closeEdit();
-}
-
-// ── Toast with undo ──
 let toastTimer;
-function showToast(msg, undoFn) {
-  const toast = document.getElementById('toast');
-  clearTimeout(toastTimer);
-  if (undoFn) {
-    toast.innerHTML = `${msg} <button onclick="this.parentElement._undo()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:3px 10px;border-radius:20px;font-family:var(--font);font-weight:600;font-size:12px;cursor:pointer;margin-right:8px">ביטול</button>`;
-    toast._undo = () => { undoFn(); toast.classList.remove('show'); clearTimeout(toastTimer); };
-  } else {
-    toast.textContent = msg;
-  }
-  toast.classList.add('show');
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
-}
+function showToast(msg,undoFn){const toast=document.getElementById('toast');clearTimeout(toastTimer);
+if(undoFn){toast.innerHTML=msg+' <button onclick="this.parentElement._undo()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:3px 10px;border-radius:20px;font-family:var(--font);font-weight:600;font-size:12px;cursor:pointer;margin-right:8px">ביטול</button>';toast._undo=()=>{undoFn();toast.classList.remove('show');clearTimeout(toastTimer)}}else{toast.textContent=msg}
+toast.classList.add('show');toastTimer=setTimeout(()=>toast.classList.remove('show'),4000)}
 
-// ═══════════════════════════════════════════════════════
-// SAVE / LOAD via Netlify Functions + JSONbin
-// ═══════════════════════════════════════════════════════
-
-function triggerSave() {
-  clearTimeout(saveTimer);
-  dot.className = 'save-dot saving';
-  saveTimer = setTimeout(doSave, 1200);
-}
-
-async function doSave() {
-  try {
-    const res = await fetch('/.netlify/functions/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes })
-    });
-    if (res.ok) dot.className = 'save-dot';
-    else dot.className = 'save-dot error';
-  } catch (e) {
-    dot.className = 'save-dot error';
-  }
-}
-
-async function loadNotes() {
-  try {
-    const res = await fetch('/.netlify/functions/notes');
-    const data = await res.json();
-    notes = data.notes || [];
-    render();
-    dot.className = 'save-dot';
-  } catch (e) {
-    dot.className = 'save-dot error';
-    notes = [];
-    render();
-  }
-}
-
-// ── Init ──
-loadNotes();
+initPinScreen();
 </script>
 </body>
 </html>
