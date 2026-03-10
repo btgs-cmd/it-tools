@@ -154,9 +154,15 @@ function decrypt(c){try{const b=CryptoJS.AES.decrypt(c,encryptionKey);const j=b.
 
 function initPinScreen(){if(!getPinHash()){document.getElementById('pinSetup').style.display='flex';document.getElementById('pinUnlock').style.display='none'}else{document.getElementById('pinSetup').style.display='none';document.getElementById('pinUnlock').style.display='flex';buildPinPad()}}
 
-window.setupPin=function(){const p=document.getElementById('pinNew').value,c=document.getElementById('pinConfirm').value,e=document.getElementById('setupError');
+window.setupPin=async function(){const p=document.getElementById('pinNew').value,c=document.getElementById('pinConfirm').value,e=document.getElementById('setupError');
 if(p.length<4||p.length>6){e.textContent='4-6 ספרות';return}if(!/^\d+$/.test(p)){e.textContent='רק ספרות';return}if(p!==c){e.textContent='לא תואם';return}
-setPinHash(p);encryptionKey=p;data={clients:[{id:'general',name:'כללי',notes:[],pinned:false}],settings:{}};triggerSave();unlockApp()};
+setPinHash(p);encryptionKey=p;
+e.textContent='טוען נתונים...';e.style.color='var(--accent)';
+try{const r=await fetch('/.netlify/functions/notes');const j=await r.json();const raw=j.notes;
+if(typeof raw==='string'){const d=decrypt(raw);if(d){data=d;e.textContent='';unlockApp();return}}
+if(Array.isArray(raw)&&raw.length>0){const m={};raw.forEach(n=>{const cn=n.client||'כללי';if(!m[cn])m[cn]={id:cn.replace(/\s+/g,'_').toLowerCase()+'_'+Date.now(),name:cn,notes:[],pinned:false};m[cn].notes.push({id:n.id,text:n.text,ts:n.ts,pinned:n.pinned||false})});data={clients:Object.values(m),settings:{}};triggerSave();unlockApp();return}
+}catch(err){}
+data={clients:[{id:'general',name:'כללי',notes:[],pinned:false}],settings:{}};triggerSave();unlockApp()};
 
 function buildPinPad(){const len=parseInt(localStorage.getItem('nf_pin_len')||'4');
 const d=document.getElementById('pinDots');d.innerHTML='';for(let i=0;i<len;i++)d.innerHTML+='<div class="pin-dot" id="dot'+i+'"></div>';
