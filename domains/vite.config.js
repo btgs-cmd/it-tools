@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/domains/',
   build: {
-    outDir: '../domains-built',
+    outDir: '../domains',
     emptyOutDir: true,
   }
 })
