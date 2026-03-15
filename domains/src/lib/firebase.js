@@ -2,14 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Replace with your Firebase project config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDqv9uLmtM46xBmQNkctKW54zW8m1xHp4c",
+  authDomain: "btgs-domain-tracker.firebaseapp.com",
+  projectId: "btgs-domain-tracker",
+  storageBucket: "btgs-domain-tracker.firebasestorage.app",
+  messagingSenderId: "947678127775",
+  appId: "1:947678127775:web:39272a219f398cc2f6a4aa"
 };
 
 const app = initializeApp(firebaseConfig);
