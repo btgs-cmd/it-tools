@@ -7,6 +7,11 @@
   NODE_VERSION = "20"
 
 [[redirects]]
-  from = "/domains/*"
+  from = "/domains"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/domains/client/*"
   to = "/index.html"
   status = 200
