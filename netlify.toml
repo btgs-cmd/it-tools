@@ -1,17 +1,12 @@
 [build]
   functions = "netlify/functions"
   command = "cd domains && npm install && npm run build"
-  publish = "domains-built"
+  publish = "."
 
 [build.environment]
   NODE_VERSION = "20"
 
 [[redirects]]
-  from = "/domains"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
   from = "/domains/client/*"
-  to = "/index.html"
+  to = "/domains/index.html"
   status = 200
